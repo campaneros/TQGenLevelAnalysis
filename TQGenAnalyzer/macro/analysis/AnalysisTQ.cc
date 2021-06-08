@@ -33,9 +33,16 @@ void AnalysisTQ::Loop(std::string mass,int tot,int trigger)
    double massnom;
    if(mass=="7" || mass=="9")massnom=3.09;
    else massnom=9.46;
+   TH1F* hnvtxw_2018;
+   TFile* fnvtxw_2018= TFile::Open("../nvtx_weights_2018UL_postsel.root");
+   hnvtxw_2018= (TH1F*)fnvtxw_2018->Get("rescaledWeights");
 
-   TFile* fout = new TFile(("fout_m"+mass+"_TQ.root").c_str(),"RECREATE");
+   hnvtxw_2018->Draw();
+   //   fnvtxw_2018->Close();
 
+
+
+   TFile* fout = new TFile(("fout_m"+mass+"_TQ.root").c_str(),"RECREATE");   
    TTree tree_red("tree_red","");
 
    Float_t e_pt1; 
@@ -320,7 +327,8 @@ void AnalysisTQ::Loop(std::string mass,int tot,int trigger)
         mass_Err= (*recoTQ_massErr)[best_cand]; 
         x_sec = xsec;
         puw2018 = puw_2018;
-        nvtxw2018 = nvtxw_2018;
+	if(nvtx>=0 && nvtx<=100)nvtxw2018 = hnvtxw_2018->GetBinContent(nvtx+1);//nvtxw_2018;
+        //nvtxw2018 =0.;
         n_vtx = nvtx;
 
 	tree_red.Fill();

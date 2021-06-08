@@ -286,7 +286,50 @@ void compareEffGen(){
  
 }
 
+void plotTriggerPerformance(){
+  TFile* f= new TFile("/eos/cms/store/group/phys_bphys/soffi/ntuple_MuOnia_Run2018B-UL2018_MiniAODv2-v1-woTrigger.root");
+  TTree* t = (TTree*)f->Get("GenAnalysis/tree");
+  TH1F* hnum_pt = new TH1F("hnum_pt", "hnum", 60,0,60);
+  TH1F* hden_pt = new TH1F("hden_pt", "hden", 60,0,60);
+  TH1F* hnum_eta = new TH1F("hnum_eta", "hnum", 20,-5,5);
+  TH1F* hden_eta = new TH1F("hden_eta", "hden", 20,-5,5);
+  hnum_pt->Sumw2();
+  hden_pt->Sumw2();
+  hnum_eta->Sumw2();
+  hden_eta->Sumw2();
+  t->Draw("recoTQ_Y1pt>>hnum_pt","HLT_Dimuon0_prescaled_2018&&recoTQ_Y1vtxprob>0.5&&recoTQ_softID1&&recoTQ_softID2&&recoTQ_Y1pt<100&&(HLT_Dimuon12_Upsilon_y1p4_v_2018||HLT_Dimuon24_Upsilon_noCorrL1_v_2018)");
+  t->Draw("recoTQ_Y1pt>>hden_pt","HLT_Dimuon0_prescaled_2018&&recoTQ_Y1vtxprob>0.5&&recoTQ_softID1&&recoTQ_softID2&&recoTQ_Y1pt<100");
+  t->Draw("recoTQ_Y1eta>>hnum_eta","HLT_Dimuon0_prescaled_2018&&recoTQ_Y1vtxprob>0.5&&recoTQ_softID1&&recoTQ_softID2&&recoTQ_Y1pt<100&&(HLT_Dimuon12_Upsilon_y1p4_v_2018||HLT_Dimuon24_Upsilon_noCorrL1_v_2018)");
+  t->Draw("recoTQ_Y1eta>>hden_eta","HLT_Dimuon0_prescaled_2018&&recoTQ_Y1vtxprob>0.5&&recoTQ_softID1&&recoTQ_softID2&&recoTQ_Y1pt<100");
 
+  hnum_pt->Divide(hden_pt);
+  hnum_eta->Divide(hden_eta);
+  TLegend* leg1 = new TLegend(0.2,0.65, 0.6,0.85);
+  leg1->SetFillColor(kWhite);
+  leg1->AddEntry(hnum_pt," Trigger Efficiency" , "PLE");
+  
+
+  TCanvas* c = new TCanvas("c","c",1);
+  c->cd();
+  hnum_pt->Draw("PE");
+  leg1->Draw("same");
+  c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_pt.png");
+  c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_pt.pdf");
+  c->SetLogy();
+  c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_pt_LOG.png");
+  c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_pt_LOG.pdf");
+
+  c->SetLogy(0);
+  hnum_eta->Draw("PE");
+  leg1->Draw("same");
+  c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_eta.png");
+  c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_eta.pdf");
+  c->SetLogy();
+  c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_eta_LOG.png");
+  c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_eta_LOG.pdf");
+
+
+}
 
 void compareEffDi(){
 
@@ -432,36 +475,60 @@ void compareEffDi(){
   */
 }
 
-void compareSigVsSPS(){
-  TFile* f26= new TFile("analysis/fout_m26_TQ.root");
-  TFile* fSPS= new TFile("analysis/fout_mSPS_TQ.root");
+void compareSigVsSPSandDPS(){
+  TFile* f26= new TFile("analysis/fout_m26wTrigger_TQ.root");
+  TFile* fSPS= new TFile("analysis/fout_mSPSwTrigger_TQ.root");
+  TFile* fDPS= new TFile("analysis/fout_mDPSwTrigger_TQ.root");
+  TFile* fdata2018=new TFile("analysis/fout_mRun2018ABCD_trigger_TQ.root");
+
   TTree* t26= (TTree*) f26->Get("tree_red");
   TTree* tSPS= (TTree*) fSPS->Get("tree_red");
+  TTree* tDPS= (TTree*) fDPS->Get("tree_red");
+  TTree* tdata2018= (TTree*) fdata2018->Get("tree_red");
 
   TH1F* Ye_26 = new TH1F("Ye_26", "",80,0,20);
   TH1F* Ye_SPS = new TH1F("Ye_SPS", "",80,0,20);
+  TH1F* Ye_DPS = new TH1F("Ye_DPS", "",80,0,20);
   TH1F* Ym_26 = new TH1F("Ym_26", "",80,0,20);
   TH1F* Ym_SPS = new TH1F("Ym_SPS", "",80,0,20);
+  TH1F* Ym_DPS = new TH1F("Ym_DPS", "",80,0,20);
 
   TH1F* pt_Ye_26 = new TH1F("pt_Ye_26", "",80,0,80);
   TH1F* pt_Ye_SPS = new TH1F("pt_Ye_SPS", "",80,0,80);
+  TH1F* pt_Ye_DPS = new TH1F("pt_Ye_DPS", "",80,0,80);
   TH1F* pt_Ym_26 = new TH1F("pt_Ym_26", "",80,0,80);
   TH1F* pt_Ym_SPS = new TH1F("pt_Ym_SPS", "",80,0,80);
+  TH1F* pt_Ym_DPS = new TH1F("pt_Ym_DPS", "",80,0,80);
 
 
   TH1F* eta_Ye_26 = new TH1F("eta_Ye_26", "",80,-10,10);
   TH1F* eta_Ye_SPS = new TH1F("eta_Ye_SPS", "",80,-10,10);
+  TH1F* eta_Ye_DPS = new TH1F("eta_Ye_DPS", "",80,-10,10);
   TH1F* eta_Ym_26 = new TH1F("eta_Ym_26", "",80,-10,10);
   TH1F* eta_Ym_SPS = new TH1F("eta_Ym_SPS", "",80,-10,10);
+  TH1F* eta_Ym_DPS = new TH1F("eta_Ym_DPS", "",80,-10,10);
 
-  TH1F* mass_26 = new TH1F("mass_26", "",80,0,40);
-  TH1F* mass_SPS = new TH1F("mass_SPS", "",80,0,40);
-  TH1F* tmass_26 = new TH1F("tmass_26", "",80,0,40);
-  TH1F* tmass_SPS = new TH1F("tmass_SPS", "",80,0,40);
-  TH1F* pt_26 = new TH1F("pt_26", "",80,0,80);
-  TH1F* pt_SPS = new TH1F("pt_SPS", "",80,0,80);
-  TH1F* eta_26 = new TH1F("eta_26", "",80,-10,10);
-  TH1F* eta_SPS = new TH1F("eta_SPS", "",80,-10,10);
+  TH1F* mass_26 = new TH1F("mass_26", "",30,10,40);
+  TH1F* mass_SPS = new TH1F("mass_SPS", "",30,10,40);
+  TH1F* mass_DPS = new TH1F("mass_DPS", "",30,10,40);
+  TH1F* tmass_26 = new TH1F("tmass_26", "",30,10,40);
+  TH1F* tmass_SPS = new TH1F("tmass_SPS", "",30,10,40);
+  TH1F* tmass_DPS = new TH1F("tmass_DPS", "",30,10,40);
+  TH1F* pt_26 = new TH1F("pt_26", "",40,0,80);
+  TH1F* pt_SPS = new TH1F("pt_SPS", "",40,0,80);
+  TH1F* pt_DPS = new TH1F("pt_DPS", "",40,0,80);
+
+  TH1F* eta_26 = new TH1F("eta_26", "",40,-10,10);
+  TH1F* eta_SPS = new TH1F("eta_SPS", "",40,-10,10);
+  TH1F* eta_DPS = new TH1F("eta_DPS", "",40,-10,10);
+
+  TH1F* nvtx_26 = new TH1F("nvtx_26", "",50,0,100);
+  TH1F* nvtx_26_w = new TH1F("nvtx_26_w", "",50,0,100);
+  TH1F* nvtx_SPS = new TH1F("nvtx_SPS", "",50,0,100);
+  TH1F* nvtx_SPS_w = new TH1F("nvtx_SPS_w", "",50,0,100);
+  TH1F* nvtx_DPS = new TH1F("nvtx_DPS", "",50,0,100);
+  TH1F* nvtx_DPS_w = new TH1F("nvtx_DPS_w", "",50,0,100);
+  TH1F* nvtx_data2018 = new TH1F("nvtx_data2018", "",50,0,100);
   
   t26->Draw("TQ_mass>>mass_26");
   t26->Draw("TQ_mass_tilde>>tmass_26");
@@ -473,6 +540,8 @@ void compareSigVsSPS(){
   t26->Draw("Ye_mass>>Ye_26");
   t26->Draw("Ye_pt>>pt_Ye_26");
   t26->Draw("Ye_eta>>eta_Ye_26");
+  t26->Draw("n_vtx>>nvtx_26_w","nvtxw2018");
+  t26->Draw("n_vtx>>nvtx_26");
 
   
   tSPS->Draw("TQ_mass>>mass_SPS");
@@ -485,23 +554,71 @@ void compareSigVsSPS(){
   tSPS->Draw("Ye_mass>>Ye_SPS");
   tSPS->Draw("Ye_pt>>pt_Ye_SPS");
   tSPS->Draw("Ye_eta>>eta_Ye_SPS");
+  tSPS->Draw("n_vtx>>nvtx_SPS_w","nvtxw2018");
+  tSPS->Draw("n_vtx>>nvtx_SPS");
 
+
+  tDPS->Draw("TQ_mass>>mass_DPS");
+  tDPS->Draw("TQ_mass_tilde>>tmass_DPS");
+  tDPS->Draw("TQ_pt>>pt_DPS");
+  tDPS->Draw("TQ_eta>>eta_DPS");
+  tDPS->Draw("Ym_mass>>Ym_DPS");
+  tDPS->Draw("Ym_pt>>pt_Ym_DPS");
+  tDPS->Draw("Ym_eta>>eta_Ym_DPS");
+  tDPS->Draw("Ye_mass>>Ye_DPS");
+  tDPS->Draw("Ye_pt>>pt_Ye_DPS");
+  tDPS->Draw("Ye_eta>>eta_Ye_DPS");
+  tDPS->Draw("n_vtx>>nvtx_DPS");
+  tDPS->Draw("n_vtx>>nvtx_DPS_w","nvtxw2018");
+
+  tdata2018->Draw("n_vtx>>nvtx_data2018");
 
 
   Ye_26->SetLineColor(kOrange+8);
   Ye_26->SetMarkerColor(kOrange+8);
+
+  std::cout<<nvtx_26_w->Integral()<<" "<<nvtx_26->Integral()<<std::endl;
+
+  Ye_SPS->SetLineColor(kGreen+2);
+  Ye_SPS->SetMarkerColor(kGreen+2);
+  Ym_SPS->SetLineColor(kGreen+2);
+  Ym_SPS->SetMarkerColor(kGreen+2);
+  mass_SPS->SetLineColor(kGreen+2);
+  mass_SPS->SetMarkerColor(kGreen+2);
+  pt_SPS->SetLineColor(kGreen+2);
+  pt_SPS->SetMarkerColor(kGreen+2);
+  tmass_SPS->SetLineColor(kGreen+2);
+  tmass_SPS->SetMarkerColor(kGreen+2);
+  eta_SPS->SetLineColor(kGreen+2);
+  eta_SPS->SetMarkerColor(kGreen+2);
+  pt_Ye_SPS->SetLineColor(kGreen+2);
+  pt_Ye_SPS->SetMarkerColor(kGreen+2);
+  eta_Ye_SPS->SetLineColor(kGreen+2);
+  eta_Ye_SPS->SetMarkerColor(kGreen+2);
+  pt_Ym_SPS->SetLineColor(kGreen+2);
+  pt_Ym_SPS->SetMarkerColor(kGreen+2);
+  eta_Ym_SPS->SetLineColor(kGreen+2);
+  eta_Ym_SPS->SetMarkerColor(kGreen+2);
+  nvtx_SPS->SetLineColor(kGreen+2);
+  nvtx_SPS->SetMarkerColor(kGreen+2);
+
+  nvtx_SPS_w->SetLineColor(kGreen+5);
+  nvtx_SPS_w->SetMarkerColor(kGreen+5);
 
   TLegend* leg2 = new TLegend(0.6,0.55, 0.85,0.85);
   leg2->SetFillColor(kWhite);
   //  leg2->SetHeader("Signal Shapes");
   leg2->AddEntry(Ye_26," TQ: 26 GeV" , "LE");
   leg2->AddEntry(Ye_SPS,"SPS(YY)" , "LE");
+  leg2->AddEntry(Ye_DPS,"DPS(YY)" , "LE");
+
 
   TLegend* leg3 = new TLegend(0.2,0.55, 0.45,0.85);
   leg3->SetFillColor(kWhite);
   //  leg3->SetHeader("Signal Shapes");
   leg3->AddEntry(Ye_26," TQ: 26 GeV" , "LE");
   leg3->AddEntry(Ye_SPS,"SPS(YY)" , "LE");
+  leg3->AddEntry(Ye_DPS,"DPS(YY)" , "LE");
 
 
   TCanvas* c = new TCanvas("c","c",800,600);
@@ -512,6 +629,7 @@ void compareSigVsSPS(){
   mass_26->GetYaxis()->SetTitle("A.U.");
   mass_26->DrawNormalized("HIST");
   mass_SPS->DrawNormalized("HISTSAME");
+  mass_DPS->DrawNormalized("HISTSAME");
   leg3->Draw("same");
   c->SaveAs("~/www/TQ-WORK/bkg/mass_shapes.png");
   c->SaveAs("~/www/TQ-WORK/bkg/mass_shapes.pdf");
@@ -528,6 +646,7 @@ void compareSigVsSPS(){
   tmass_26->GetYaxis()->SetTitle("A.U.");
   tmass_26->DrawNormalized("HIST");
   tmass_SPS->DrawNormalized("HISTSAME");
+  tmass_DPS->DrawNormalized("HISTSAME");
   leg3->Draw("same");
   c->SaveAs("~/www/TQ-WORK/bkg/tmass_shapes.png");
   c->SaveAs("~/www/TQ-WORK/bkg/tmass_shapes.pdf");
@@ -545,6 +664,7 @@ void compareSigVsSPS(){
   pt_26->GetYaxis()->SetTitle("A.U.");
   pt_26->DrawNormalized("HIST");
   pt_SPS->DrawNormalized("HISTSAME");
+  pt_DPS->DrawNormalized("HISTSAME");
   leg2->Draw("same");
   c->SaveAs("~/www/TQ-WORK/bkg/pt_shapes.png");
   c->SaveAs("~/www/TQ-WORK/bkg/pt_shapes.pdf");
@@ -560,6 +680,7 @@ void compareSigVsSPS(){
   eta_26->GetYaxis()->SetTitle("A.U.");
   eta_26->DrawNormalized("HIST");
   eta_SPS->DrawNormalized("HISTSAME");
+  eta_DPS->DrawNormalized("HISTSAME");
   leg2->Draw("same");
   c->SaveAs("~/www/TQ-WORK/bkg/eta_shapes.png");
   c->SaveAs("~/www/TQ-WORK/bkg/eta_shapes.pdf");
@@ -575,6 +696,7 @@ void compareSigVsSPS(){
   Ym_26->GetYaxis()->SetTitle("A.U.");
   Ym_26->DrawNormalized("HIST");
   Ym_SPS->DrawNormalized("HISTSAME");
+  Ym_DPS->DrawNormalized("HISTSAME");
   leg2->Draw("same");
   c->SaveAs("~/www/TQ-WORK/bkg/Ym_shapes.png");
   c->SaveAs("~/www/TQ-WORK/bkg/Ym_shapes.pdf");
@@ -590,6 +712,7 @@ void compareSigVsSPS(){
   pt_Ym_26->GetYaxis()->SetTitle("A.U.");
   pt_Ym_26->DrawNormalized("HIST");
   pt_Ym_SPS->DrawNormalized("HISTSAME");
+  pt_Ym_DPS->DrawNormalized("HISTSAME");
   leg2->Draw("same");
   c->SaveAs("~/www/TQ-WORK/bkg/pt_Ym_shapes.png");
   c->SaveAs("~/www/TQ-WORK/bkg/pt_Ym_shapes.pdf");
@@ -606,6 +729,7 @@ void compareSigVsSPS(){
   eta_Ym_26->GetYaxis()->SetTitle("A.U.");
   eta_Ym_26->DrawNormalized("HIST");
   eta_Ym_SPS->DrawNormalized("HISTSAME");
+  eta_Ym_DPS->DrawNormalized("HISTSAME");
   leg2->Draw("same");
   c->SaveAs("~/www/TQ-WORK/bkg/eta_Ym_shapes.png");
   c->SaveAs("~/www/TQ-WORK/bkg/eta_Ym_shapes.pdf");
@@ -622,6 +746,7 @@ void compareSigVsSPS(){
   pt_Ye_26->GetYaxis()->SetTitle("A.U.");
   pt_Ye_26->DrawNormalized("HIST");
   pt_Ye_SPS->DrawNormalized("HISTSAME");
+  pt_Ye_DPS->DrawNormalized("HISTSAME");
   leg2->Draw("same");
   c->SaveAs("~/www/TQ-WORK/bkg/pt_Ye_shapes.png");
   c->SaveAs("~/www/TQ-WORK/bkg/pt_Ye_shapes.pdf");
@@ -638,6 +763,7 @@ void compareSigVsSPS(){
   eta_Ye_26->GetYaxis()->SetTitle("A.U.");
   eta_Ye_26->DrawNormalized("HIST");
   eta_Ye_SPS->DrawNormalized("HISTSAME");
+  eta_Ye_DPS->DrawNormalized("HISTSAME");
   leg2->Draw("same");
   c->SaveAs("~/www/TQ-WORK/bkg/eta_Ye_shapes.png");
   c->SaveAs("~/www/TQ-WORK/bkg/eta_Ye_shapes.pdf");
@@ -653,6 +779,7 @@ void compareSigVsSPS(){
   Ye_26->GetYaxis()->SetTitle("A.U.");
   Ye_26->DrawNormalized("HIST");
   Ye_SPS->DrawNormalized("HISTSAME");
+  Ye_DPS->DrawNormalized("HISTSAME");
   leg2->Draw("same");
   c->SaveAs("~/www/TQ-WORK/bkg/Ye_shapes.png");
   c->SaveAs("~/www/TQ-WORK/bkg/Ye_shapes.pdf");
@@ -660,6 +787,33 @@ void compareSigVsSPS(){
   c->SetLogy();
   c->SaveAs("~/www/TQ-WORK/bkg/Ye_shapes_LOG.png");
   c->SaveAs("~/www/TQ-WORK/bkg/Ye_shapes_LOG.pdf");
+
+
+  c->SetLogy(0);
+  nvtx_26->SetLineColor(kOrange+8);
+  nvtx_26->SetMarkerColor(kOrange+8);
+  nvtx_26->GetXaxis()->SetTitle("# vertices");
+  nvtx_26->GetYaxis()->SetTitle("A.U.");
+  nvtx_26->Scale(nvtx_data2018->Integral()/nvtx_26->Integral());
+  nvtx_26_w->Scale(nvtx_data2018->Integral()/nvtx_26_w->Integral());
+  nvtx_SPS->Scale(nvtx_data2018->Integral()/nvtx_SPS->Integral());
+  nvtx_SPS_w->Scale(nvtx_data2018->Integral()/nvtx_SPS_w->Integral());
+  nvtx_DPS->Scale(nvtx_data2018->Integral()/nvtx_DPS->Integral());
+  nvtx_DPS_w->Scale(nvtx_data2018->Integral()/nvtx_DPS_w->Integral());
+  nvtx_26->Draw("HIST");
+  nvtx_26_w->Draw("HISTsame");
+  nvtx_SPS->Draw("HIST");
+  nvtx_SPS_w->Draw("HISTsame");
+  //  nvtx_DPS->Draw("HIST");
+  //  nvtx_DPS_w->Draw("HISTsame");
+  nvtx_data2018->Draw("PESAME");
+  //  leg2->Draw("same");
+  c->SaveAs("~/www/TQ-WORK/bkg/nvtx_shapes.png");
+  c->SaveAs("~/www/TQ-WORK/bkg/nvtx_shapes.pdf");
+
+  c->SetLogy();
+  c->SaveAs("~/www/TQ-WORK/bkg/nvtx_shapes_LOG.png");
+  c->SaveAs("~/www/TQ-WORK/bkg/nvtx_shapes_LOG.pdf");
 
 }
 

@@ -118,6 +118,7 @@
 #include "RecoVertex/KinematicFitPrimitives/interface/RefCountedKinematicTree.h"
 // root include files
 #include "TTree.h"
+#include "TCanvas.h"
 #include "TLorentzVector.h"
 
 // system include files
@@ -230,6 +231,12 @@ struct tree_struc_{
   float puw_2017;
   float puw_2018;
   float puw_ALL;
+
+
+  float nvtxw_2016;
+  float nvtxw_2017;
+  float nvtxw_2018;
+  float nvtxw_ALL;
   int run;
   int lumi;
   long unsigned int event;
@@ -269,7 +276,8 @@ struct tree_struc_{
   std::vector<float>            genMom_phi;
   std::vector<int>            genMom_pdgId;
 
-
+  int nMediumDimu;
+  int nSoftDimu;
   /*
   int nMuReco;
   std::vector<float>            recoMu_pt;
@@ -442,6 +450,7 @@ struct tree_struc_{
   std::vector<float>            recoTQ_charge1;
   std::vector<float>            recoTQ_mass1;
   std::vector<int>            recoTQ_softID1;
+  std::vector<int>            recoTQ_mediumID1;
 
   std::vector<int>            recoTQ_leptype2;
   std::vector<float>            recoTQ_pt2;
@@ -450,6 +459,7 @@ struct tree_struc_{
   std::vector<float>            recoTQ_charge2;
   std::vector<float>            recoTQ_mass2;
   std::vector<int>            recoTQ_softID2;
+  std::vector<int>            recoTQ_mediumID2;
 
   std::vector<int>              recoTQ_isTrigMatch1;                                                                                                        
   std::vector<float>              recoTQ_drTrigMatch1;                                                                                                      
@@ -464,6 +474,7 @@ struct tree_struc_{
   std::vector<float>            recoTQ_charge3;
   std::vector<float>            recoTQ_mass3;
   std::vector<int>            recoTQ_softID3;
+  std::vector<int>            recoTQ_mediumID3;
   std::vector<float>            recoTQ_mvaValue3;
   std::vector<float>            recoTQ_mvaPFValue3;
   std::vector<int>            recoTQ_isPF3;
@@ -479,6 +490,7 @@ struct tree_struc_{
   std::vector<float>            recoTQ_charge4;
   std::vector<float>            recoTQ_mass4;
   std::vector<int>            recoTQ_softID4;
+  std::vector<int>            recoTQ_mediumID4;
   std::vector<float>            recoTQ_mvaValue4;
   std::vector<float>            recoTQ_mvaPFValue4;
   std::vector<int>            recoTQ_isPF4;
@@ -512,6 +524,9 @@ private:
 
   void SetPuWeights(int year, double* puw_array);
   float GetPUWeight(int npu,int year);
+
+  void SetNVTXWeights(int year, double* puw_array);
+  float GetNVTXWeight(int npu,int year);
 
   // ---------- member data -------------------- //
   edm::Service<TFileService> fs;
@@ -559,6 +574,11 @@ private:
    double puweights2017_[100];
    double puweights2018_[100];
    double puweightsALL_[100];
+
+   double nvtxweights2016_[100];
+   double nvtxweights2017_[100];
+   double nvtxweights2018_[100];
+   double nvtxweightsALL_[100];
 
    // setup tree;
   TTree* tree;
@@ -714,12 +734,14 @@ private:
      std::vector<float>            recoDimu_charge1;
      std::vector<float>            recoDimu_mass1;        
      std::vector<float>            recoDimu_softID1;        
+     std::vector<float>            recoDimu_mediumID1;        
      std::vector<float>            recoDimu_pt2;  
      std::vector<float>            recoDimu_eta2;
      std::vector<float>            recoDimu_phi2;
      std::vector<float>            recoDimu_charge2;
      std::vector<float>            recoDimu_mass2;        
      std::vector<float>            recoDimu_softID2;        
+     std::vector<float>            recoDimu_mediumID2;        
      std::vector<float>            recoDimu_pt;        
      std::vector<float>            recoDimu_eta;        
      std::vector<float>            recoDimu_phi;        
@@ -842,6 +864,7 @@ private:
   std::vector<float>            recoTQ_charge1;
   std::vector<float>            recoTQ_mass1;
   std::vector<int>            recoTQ_softID1;
+  std::vector<int>            recoTQ_mediumID1;
 
 
   std::vector<int>            recoTQ_leptype2;
@@ -851,6 +874,7 @@ private:
   std::vector<float>            recoTQ_charge2;
   std::vector<float>            recoTQ_mass2;
   std::vector<int>            recoTQ_softID2;
+  std::vector<int>            recoTQ_mediumID2;
 
 
   std::vector<int>              recoTQ_isTrigMatch1;                                                                                                        
@@ -867,6 +891,7 @@ private:
   std::vector<float>            recoTQ_charge3;
   std::vector<float>            recoTQ_mass3;
   std::vector<int>            recoTQ_softID3;
+  std::vector<int>            recoTQ_mediumID3;
   std::vector<float>            recoTQ_mvaValue3;
   std::vector<float>            recoTQ_mvaPFValue3;
   std::vector<int>            recoTQ_isPF3;
@@ -882,6 +907,7 @@ private:
   std::vector<float>            recoTQ_charge4;
   std::vector<float>            recoTQ_mass4;
   std::vector<int>            recoTQ_softID4;
+  std::vector<int>            recoTQ_mediumID4;
   std::vector<float>            recoTQ_mvaValue4;
   std::vector<float>            recoTQ_mvaPFValue4;
   std::vector<int>            recoTQ_isPF4;
@@ -954,7 +980,8 @@ private:
 
 
  
-	 
+
+       
        
      }
 
@@ -973,6 +1000,8 @@ private:
      int nPFEleReco=0;
      int nLowPtEleReco=0;
      int nDimuReco=0;
+     int nMediumDimu=0;
+     int nSoftDimu=0;
      int nDieleReco=0;
      int nTQReco=0;
 
@@ -993,6 +1022,10 @@ private:
      float puw_2017 = 1.;
      float puw_2018 = 1.;
      float puw_ALL = 1.;
+     float nvtxw_2016 = 1.;
+     float nvtxw_2017 = 1.;
+     float nvtxw_2018 = 1.;
+     float nvtxw_ALL = 1.;
      int npu      = -1;
   
      // ---------- GEN LEVEL INFO -------------------- //
@@ -1049,6 +1082,12 @@ private:
      vz=pv.z();
      int nvtx=vtxH_->size();
 
+     if(sampleID <=0){
+       nvtxw_2016 = GetNVTXWeight(nvtx,2016);
+       nvtxw_2017 = GetNVTXWeight(nvtx,2017);
+       nvtxw_2018 = GetNVTXWeight(nvtx,2018);
+       nvtxw_ALL = GetNVTXWeight(nvtx,0);
+     }
      //saving rho
      float rho = *(rhoH_.product());
 
@@ -1346,6 +1385,7 @@ private:
 	recoDimu_charge1.push_back(mu1.charge());
 	recoDimu_mass1.push_back(mu1.mass());
 	recoDimu_softID1.push_back(muon::isSoftMuon(mu1, pv));
+	recoDimu_mediumID1.push_back(muon::isMediumMuon(mu1));
 	
 	
 	recoDimu_pt2.push_back(mu2.pt());
@@ -1354,6 +1394,7 @@ private:
 	recoDimu_charge2.push_back(mu2.charge());
 	recoDimu_mass2.push_back(mu2.mass());
 	recoDimu_softID2.push_back(muon::isSoftMuon(mu2, pv));
+	recoDimu_mediumID2.push_back(muon::isMediumMuon(mu2));
 	
 	recoDimu_vx.push_back(fitter2.fitted_vtx().x());
 	recoDimu_vy.push_back(fitter2.fitted_vtx().y());
@@ -1372,6 +1413,8 @@ private:
 	
 	nDimuReco++;
 
+	if(muon::isMediumMuon(mu2) && muon::isMediumMuon(mu1)&&fitter2.prob()>0.05)nMediumDimu++;
+	if(muon::isSoftMuon(mu1, pv)&&muon::isSoftMuon(mu2, pv)&&fitter2.prob()>0.05)nSoftDimu++;
 
 
     }
@@ -2028,11 +2071,11 @@ private:
 
      //select now best mumu pair:
      double deltamass_dimucand=999;
-     int dimucand;
+     int dimucand=999;
 
      for(int idimu=0;idimu<nDimuReco;idimu++){
-       //       if(recoDimu_isTrigMatch1[idimu]>10 || recoDimu_isTrigMatch2[idimu]>10 || recoDimu_drTrigMatch1[idimu]>1 || recoDimu_drTrigMatch2[idimu]>1)continue;
-       //if(recoDimu_isTrigMatch1[idimu]!=recoDimu_isTrigMatch2[idimu])continue;
+       if(recoDimu_isTrigMatch1[idimu]>10 || recoDimu_isTrigMatch2[idimu]>10 || recoDimu_drTrigMatch1[idimu]>0.1 || recoDimu_drTrigMatch2[idimu]>0.1)continue;
+       if(recoDimu_isTrigMatch1[idimu]!=recoDimu_isTrigMatch2[idimu])continue;
        if(abs(recoDimu_mass[idimu]-massRef)<deltamass_dimucand){
 	 deltamass_dimucand=abs(recoDimu_mass[idimu]-massRef);
 	 dimucand=idimu;
@@ -2103,6 +2146,7 @@ private:
 	 recoTQ_charge1.push_back(recoDimu_charge1[idimu]);
 	 recoTQ_mass1.push_back(recoDimu_mass1[idimu]);
 	 recoTQ_softID1.push_back(recoDimu_softID1[idimu]);
+	 recoTQ_mediumID1.push_back(recoDimu_mediumID1[idimu]);
 	 
 
 	 recoTQ_leptype2.push_back(0); 
@@ -2112,6 +2156,7 @@ private:
 	 recoTQ_charge2.push_back(recoDimu_charge2[idimu]);
 	 recoTQ_mass2.push_back(recoDimu_mass2[idimu]);
 	 recoTQ_softID2.push_back(recoDimu_softID2[idimu]);
+	 recoTQ_mediumID2.push_back(recoDimu_mediumID2[idimu]);
 
          recoTQ_isTrigMatch1.push_back(recoDimu_isTrigMatch1[idimu]);                                                                                    
 	 recoTQ_drTrigMatch1.push_back(recoDimu_drTrigMatch1[idimu]);
@@ -2141,6 +2186,7 @@ private:
          recoTQ_charge3.push_back(recoDiele_charge1[idiel]);
          recoTQ_mass3.push_back(recoDiele_mass1[idiel]);
          recoTQ_softID3.push_back(-999);
+         recoTQ_mediumID3.push_back(-999);
          recoTQ_mvaValue3.push_back(recoDiele_mvaValue1[idiel]);
          recoTQ_mvaPFValue3.push_back(recoDiele_mvaPFValue1[idiel]);
          recoTQ_isPF3.push_back(recoDiele_isPF1[idiel]);
@@ -2156,6 +2202,7 @@ private:
          recoTQ_charge4.push_back(recoDiele_charge2[idiel]);
          recoTQ_mass4.push_back(recoDiele_mass2[idiel]);
          recoTQ_softID4.push_back(-999);
+         recoTQ_mediumID4.push_back(-999);
          recoTQ_mvaValue4.push_back(recoDiele_mvaValue2[idiel]);
          recoTQ_mvaPFValue4.push_back(recoDiele_mvaPFValue2[idiel]);
          recoTQ_isPF4.push_back(recoDiele_isPF2[idiel]);
@@ -2172,9 +2219,10 @@ private:
 
        h_counter->Fill(1);
      
-       bool triggerOK;
-       if(sampleID <=0)triggerOK=1;
-       else if(year==2016){
+       bool triggerOK=0;
+       //       if(sampleID <=0)triggerOK=1;
+       
+       if(year==2016){
 	 triggerOK = HLT_Dimuon13_Upsilon_v_2016||HLT_Dimuon8_Upsilon_Barrel_v_2016 ;
        }else if(year==2017){
 	 triggerOK = HLT_Dimuon12_Upsilon_eta1p5_v_2017 || HLT_Dimuon24_Upsilon_noCorrL1_v_2017 ||HLT_DoubleMu3_DoubleEle7p5_CaloIdL_TrackIdL_Upsilon_v_2017 ||HLT_DoubleMu5_Upsilon_DoubleEle3_CaloIdL_TrackIdL_v_2017;
@@ -2182,7 +2230,11 @@ private:
 	 triggerOK = HLT_Dimuon12_Upsilon_y1p4_v_2018 || HLT_Dimuon24_Upsilon_noCorrL1_v_2018 || HLT_DoubleMu3_DoubleEle7p5_CaloIdL_TrackIdL_Upsilon_v_2018 || HLT_DoubleMu5_Upsilon_DoubleEle3_CaloIdL_TrackIdL_v_2018;
        }
 
-    
+
+
+       //perform trigger studies: need prescaled trigger fired
+       //       triggerOK=HLT_Dimuon0_prescaled_2018;    
+       
        if(triggerOK)h_counter->Fill(3);
               
        initTreeStructure();
@@ -2204,6 +2256,11 @@ private:
     tree_.puw_2017=puw_2017;
     tree_.puw_2018=puw_2018;
     tree_.puw_ALL=puw_ALL;
+
+    tree_.nvtxw_2016=nvtxw_2016;
+    tree_.nvtxw_2017=nvtxw_2017;
+    tree_.nvtxw_2018=nvtxw_2018;
+    tree_.nvtxw_ALL=nvtxw_ALL;
     
 
     tree_.HLT_Dimuon13_Upsilon_v_2016=HLT_Dimuon13_Upsilon_v_2016;
@@ -2403,6 +2460,9 @@ private:
     }
     */    
 
+
+    tree_.nSoftDimu=nSoftDimu;
+    tree_.nMediumDimu=nMediumDimu;
   // TQ
     tree_.nTQReco=nTQReco;
     for(unsigned int i=0;i<recoTQ_pt.size();i++){
@@ -2442,6 +2502,7 @@ private:
 	tree_.recoTQ_charge1.push_back(	          recoTQ_charge1[i]);	  	       
 	tree_.recoTQ_mass1.push_back(	       	       recoTQ_mass1[i]);	       	  
         tree_.recoTQ_softID1.push_back(	       	     recoTQ_softID1[i]);	       	  
+        tree_.recoTQ_mediumID1.push_back(	       	     recoTQ_mediumID1[i]);	       	  
         				                                               
         tree_.recoTQ_leptype2.push_back(       	     recoTQ_leptype2[i]);	       
 	tree_.recoTQ_pt2.push_back(	       	       recoTQ_pt2[i]);		       
@@ -2450,6 +2511,7 @@ private:
 	tree_.recoTQ_charge2.push_back(	          recoTQ_charge2[i]);	  	       
 	tree_.recoTQ_mass2.push_back(	       	       recoTQ_mass2[i]);	       	  
         tree_.recoTQ_softID2.push_back(	       	     recoTQ_softID2[i]);	       	  
+        tree_.recoTQ_mediumID2.push_back(	       	     recoTQ_mediumID2[i]);	       	  
 
 	tree_.recoTQ_isTrigMatch1.push_back(    recoTQ_isTrigMatch1[i]);
 	tree_.recoTQ_drTrigMatch1.push_back(    recoTQ_drTrigMatch1[i]);
@@ -2465,6 +2527,7 @@ private:
 	tree_.recoTQ_charge3.push_back(	          recoTQ_charge3[i]);	  	       
 	tree_.recoTQ_mass3.push_back(	       	       recoTQ_mass3[i]);	       	  
         tree_.recoTQ_softID3.push_back(	       	     recoTQ_softID3[i]);	       	  
+        tree_.recoTQ_mediumID3.push_back(	       	     recoTQ_mediumID3[i]);	       	  
 	tree_.recoTQ_mvaValue3.push_back(      	       recoTQ_mvaValue3[i]);	       
 	tree_.recoTQ_mvaPFValue3.push_back(    	       recoTQ_mvaPFValue3[i]);	       
         tree_.recoTQ_isPF3.push_back(	       	     recoTQ_isPF3[i]);		       
@@ -2480,6 +2543,7 @@ private:
 	tree_.recoTQ_charge4.push_back(	          recoTQ_charge4[i]);	  	       
 	tree_.recoTQ_mass4.push_back(	       	       recoTQ_mass4[i]);	       	  
         tree_.recoTQ_softID4.push_back(	       	     recoTQ_softID4[i]);	       	  
+        tree_.recoTQ_mediumID4.push_back(	       	     recoTQ_mediumID4[i]);	       	  
 	tree_.recoTQ_mvaValue4.push_back(      	       recoTQ_mvaValue4[i]);	       
 	tree_.recoTQ_mvaPFValue4.push_back(    	       recoTQ_mvaPFValue4[i]);	       
         tree_.recoTQ_isPF4.push_back(	       	     recoTQ_isPF4[i]);		       
@@ -2489,7 +2553,7 @@ private:
  }
 
 
-    triggerOK=1;
+
 
     if(nTQReco>0 && triggerOK)    tree->Fill();
 
@@ -2503,6 +2567,11 @@ void TQGenAnalyzer::beginJob()
   SetPuWeights(2017,puweights2017_);
   SetPuWeights(2018,puweights2018_);
   SetPuWeights(0,puweightsALL_);
+
+  SetNVTXWeights(2016,nvtxweights2016_);
+  SetNVTXWeights(2017,nvtxweights2017_);
+  SetNVTXWeights(2018,nvtxweights2018_);
+  SetNVTXWeights(0,nvtxweightsALL_);
 
   // --- set up output tree
   h_counter = fs->make<TH1F>("h_counter","h_counter",2,0,4);
@@ -2525,6 +2594,12 @@ void TQGenAnalyzer::beginJob()
   tree->Branch("puw_2017", &tree_.puw_2017, "puw_2017/F");
   tree->Branch("puw_2018", &tree_.puw_2018, "puw_2018/F");
   tree->Branch("puw_ALL", &tree_.puw_ALL, "puw_ALL/F");
+
+
+  tree->Branch("nvtxw_2016", &tree_.nvtxw_2016, "nvtxw_2016/F");
+  tree->Branch("nvtxw_2017", &tree_.nvtxw_2017, "nvtxw_2017/F");
+  tree->Branch("nvtxw_2018", &tree_.nvtxw_2018, "nvtxw_2018/F");
+  tree->Branch("nvtxw_ALL", &tree_.nvtxw_ALL, "nvtxw_ALL/F");
 
 
 
@@ -2688,6 +2763,11 @@ void TQGenAnalyzer::beginJob()
   tree->Branch("recoDiele_phi2mode",     &tree_.recoDiele_phi2mode);
 
   */  
+
+
+  tree->Branch("nSoftDimu", &tree_.nSoftDimu, "nSoftDimu/I");
+  tree->Branch("nMediumDimu", &tree_.nMediumDimu, "nMediumDimu/I");
+
   tree->Branch("nTQReco", &tree_.nTQReco, "nTQReco/I");
   tree->Branch("recoTQ_pt"            ,&tree_.recoTQ_pt);		      	
   tree->Branch("recoTQ_eta"           ,&tree_.recoTQ_eta);		      
@@ -2727,6 +2807,7 @@ tree->Branch("recoTQ_Y2vtxprob"       ,&tree_.recoTQ_Y2vtxprob);
  tree->Branch("recoTQ_charge1"      ,&tree_.recoTQ_charge1  );	  	      
  tree->Branch("recoTQ_mass1"        ,&tree_.recoTQ_mass1 );	      	
  tree->Branch("recoTQ_softID1"      ,&tree_.recoTQ_softID1 );	      	
+ tree->Branch("recoTQ_mediumID1"      ,&tree_.recoTQ_mediumID1 );	      	
 				                                        
  tree->Branch("recoTQ_leptype2"     ,&tree_.recoTQ_leptype2);	      	
  tree->Branch("recoTQ_pt2"          ,&tree_.recoTQ_pt2   );		      
@@ -2735,7 +2816,7 @@ tree->Branch("recoTQ_Y2vtxprob"       ,&tree_.recoTQ_Y2vtxprob);
  tree->Branch("recoTQ_charge2"      ,&tree_.recoTQ_charge2  );	  	      
  tree->Branch("recoTQ_mass2"        ,&tree_.recoTQ_mass2 );	      	
  tree->Branch("recoTQ_softID2"      ,&tree_.recoTQ_softID2 );	      	
-				                                        
+ tree->Branch("recoTQ_mediumID2"      ,&tree_.recoTQ_mediumID2 );	      	
 
   tree->Branch("recoTQ_isTrigMatch1"      ,&tree_.recoTQ_isTrigMatch1 );
   tree->Branch("recoTQ_drTrigMatch1"      ,&tree_.recoTQ_drTrigMatch1 );
@@ -2750,6 +2831,7 @@ tree->Branch("recoTQ_Y2vtxprob"       ,&tree_.recoTQ_Y2vtxprob);
  tree->Branch("recoTQ_charge3"      ,&tree_.recoTQ_charge3  );	  	      
  tree->Branch("recoTQ_mass3"        ,&tree_.recoTQ_mass3 );	      	
  tree->Branch("recoTQ_softID3"      ,&tree_.recoTQ_softID3 );	      	
+ tree->Branch("recoTQ_mediumID3"      ,&tree_.recoTQ_mediumID3 );	      	
  tree->Branch("recoTQ_mvaValue3"    ,&tree_.recoTQ_mvaValue3);	      	
  tree->Branch("recoTQ_mvaPFValue3"  ,&tree_.recoTQ_mvaPFValue3);	      
  tree->Branch("recoTQ_isPF3"        ,&tree_.recoTQ_isPF3   );		      
@@ -2764,6 +2846,7 @@ tree->Branch("recoTQ_Y2vtxprob"       ,&tree_.recoTQ_Y2vtxprob);
  tree->Branch("recoTQ_charge4"      ,&tree_.recoTQ_charge4  );	  	      
  tree->Branch("recoTQ_mass4"        ,&tree_.recoTQ_mass4 );	      	
  tree->Branch("recoTQ_softID4"      ,&tree_.recoTQ_softID4 );	      	
+ tree->Branch("recoTQ_mediumID4"      ,&tree_.recoTQ_mediumID4 );	      	
  tree->Branch("recoTQ_mvaValue4"    ,&tree_.recoTQ_mvaValue4);	      	
  tree->Branch("recoTQ_mvaPFValue4"  ,&tree_.recoTQ_mvaPFValue4);	      
  tree->Branch("recoTQ_isPF4"        ,&tree_.recoTQ_isPF4   );		      
@@ -2979,19 +3062,21 @@ tree_.recoTQ_Y2vtxprob.clear();
 					
 tree_.recoTQ_leptype1.clear();	      	
 tree_.recoTQ_pt1   .clear();		
-tree_.recoTQ_eta1  .clear();		
+ tree_.recoTQ_eta1  .clear();		
 tree_.recoTQ_phi1  .clear();		
 tree_.recoTQ_charge1  .clear();	  	
 tree_.recoTQ_mass1 .clear();	      	
 tree_.recoTQ_softID1 .clear();	      	
+tree_.recoTQ_mediumID1 .clear();	      	
                                   
 tree_.recoTQ_leptype2.clear();	      	
 tree_.recoTQ_pt2   .clear();		
 tree_.recoTQ_eta2  .clear();		
 tree_.recoTQ_phi2  .clear();		
-tree_.recoTQ_charge2  .clear();	  	
+ tree_.recoTQ_charge2  .clear();	  	
  tree_.recoTQ_mass2 .clear();	      	
  tree_.recoTQ_softID2 .clear();	      	
+tree_.recoTQ_mediumID2 .clear();	      	
  
  tree_.recoTQ_isTrigMatch1.clear();
  tree_.recoTQ_drTrigMatch1.clear();
@@ -3006,6 +3091,7 @@ tree_.recoTQ_phi3  .clear();
 tree_.recoTQ_charge3  .clear();	  	
 tree_.recoTQ_mass3 .clear();	      	
 tree_.recoTQ_softID3 .clear();	      	
+tree_.recoTQ_mediumID3 .clear();	      	
 tree_.recoTQ_mvaValue3.clear();	      	
 tree_.recoTQ_mvaPFValue3.clear();	
 tree_.recoTQ_isPF3   .clear();		
@@ -3020,6 +3106,7 @@ tree_.recoTQ_phi4  .clear();
 tree_.recoTQ_charge4  .clear();	  	
 tree_.recoTQ_mass4 .clear();	      	
 tree_.recoTQ_softID4 .clear();	      	
+tree_.recoTQ_mediumID4 .clear();	      	
 tree_.recoTQ_mvaValue4.clear();	      	
 tree_.recoTQ_mvaPFValue4.clear();	
 tree_.recoTQ_isPF4   .clear();		
@@ -3058,7 +3145,7 @@ void TQGenAnalyzer::SetPuWeights(int year,double* puw_array) {
   else   if(year==2017) puWeightFile="pileup_2017.root";
   else   if(year==2018) puWeightFile="pileup_2018.root";
   else   if(year==0) puWeightFile="pileup_ALL.root";
-
+  puWeightFile="pileup_2018.root";
   if (puWeightFile == "") {
     std::cout << "you need a weights file to use this function" << std::endl;
     return;
@@ -3070,6 +3157,7 @@ void TQGenAnalyzer::SetPuWeights(int year,double* puw_array) {
   f_pu->cd();
 
   TH1D* pu_data = (TH1D*) f_pu->Get("pileup");
+  //  pu_data->Sumw2();
   pu_data->Scale(1./pu_data->Integral());
 
   double MC_weights_2016UL[100]={1.00402360149e-05, 5.76498797172e-05, 7.37891400294e-05, 0.000110932895295, 0.000158857714773,
@@ -3131,27 +3219,90 @@ void TQGenAnalyzer::SetPuWeights(int year,double* puw_array) {
 				 2.556765786e-05, 1.75845711623e-05, 1.23828210848e-05, 9.31669724108e-06, 6.0713272037e-06,
 				 3.95387384933e-06, 2.02760874107e-06, 1.22535149516e-06, 9.79612472109e-07, 7.61730246474e-07,
 				 4.2748847738e-07, 2.41170461205e-07, 1.38701083552e-07, 3.37678010922e-08, 0.0,
-				 0.0, 0.0, 0.0, 0.0, 0.0,
-				 0.0, 0.0, 0.0, 0.0, 0.0,
-				 0.0, 0.0, 0.0, 0.0, 0.0,
-				 0.0, 0.0, 0.0, 0.0,0.0};
+				 0.01e-07, 0.01e-07, 0.01e-07, 0.01e-07, 0.01e-07,
+				 0.01e-07, 0.01e-07, 0.01e-07, 0.01e-07, 0.01e-07,
+				 0.01e-07, 0.01e-07, 0.01e-07, 0.01e-07, 0.01e-07,
+				 0.01e-07, 0.01e-07, 0.01e-07, 0.01e-07, 0.01e-07};
 
-  double pum=-1.;
-  double pud=-1.;
-  double puw=1;
+
+  TH1F* pu_MC_2018UL = new TH1F("pu_MC_2018UL","",100,0,100);
+  for(int i=0;i<100;i++) pu_MC_2018UL->SetBinContent(i+1,MC_weights_2018UL[i]);
+  //pu_MC_2018UL->Sumw2();
+  pu_MC_2018UL->Scale(1./pu_MC_2018UL->Integral());
+
+
+
+  TH1F *myClone = (TH1F*)pu_data->Clone("myClone");
+  //  myClone->Sumw2();
+  myClone->Divide(pu_MC_2018UL);
+  myClone->SetTitle("weights");
+  myClone->SetName("weights");
+  myClone->Scale(1./myClone->Integral());
+
+  TH1F* weightedNpu= (TH1F*)pu_MC_2018UL->Clone("weightedNvtx");
+  //  weightedNpu->Sumw2();
+  weightedNpu->Multiply(myClone);
+
+  TH1F* weights = (TH1F*)myClone->Clone("rescaledWeights");
+  //  weights->Sumw2();
+  weights->Scale( pu_MC_2018UL->Integral() / weightedNpu->Integral() );
+  
+
   for(int i=0;i<100;i++){
-    pud=pu_data->GetBinContent(i+1);
-    pum=MC_weights_2016UL[i];
-    puw=1;
-
-    if(pum!=0)puw=pud/pum;
-
-    puw_array[i]=puw;
+    puw_array[i]=weights->GetBinContent(i+1);
   }
 
-  
-  
-  
+    
 }
+
+
+
+
+float TQGenAnalyzer::GetNVTXWeight(int nvtx,int year) {
+  
+  float weight=1;
+  if (sampleIndex_<=0 && nvtx<100){
+    if(year==2016)weight = nvtxweights2016_[nvtx];
+    if(year==2017)weight = nvtxweights2017_[nvtx];
+    if(year==2018)weight = nvtxweights2018_[nvtx];
+    if(year==0)weight = nvtxweightsALL_[nvtx];
+
+  }
+
+  return weight;
+}
+
+
+
+
+void TQGenAnalyzer::SetNVTXWeights(int year,double* puw_array) {
+
+  std::string puWeightFile;
+  if(year==2016) puWeightFile="pileup_2016.root";
+  else   if(year==2017) puWeightFile="pileup_2017.root";
+  else   if(year==2018) puWeightFile="pileup_2018.root";
+  else   if(year==0) puWeightFile="pileup_ALL.root";
+  puWeightFile="nvtx_weights_2018UL.root";
+  if (puWeightFile == "") {
+    std::cout << "you need a weights file to use this function" << std::endl;
+    return;
+  }
+
+  std::cout << "NVTX REWEIGHTING:: Using file " << puWeightFile << std::endl;
+
+  TFile *f_pu  = new TFile(puWeightFile.c_str(),"READ");
+  f_pu->cd();
+
+  TH1F*  weights= (TH1F*) f_pu->Get("rescaledWeights");
+
+  for(int i=0;i<100;i++){
+    puw_array[i]=weights->GetBinContent(i+1);
+  }
+
+    
+}
+
+
+
 
 DEFINE_FWK_MODULE(TQGenAnalyzer);

@@ -33,21 +33,6 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.source = cms.Source("PoolSource",
                                 # replace 'myfile.root' with the source file you want to use
                                 fileNames = cms.untracked.vstring(
-#            'file:/afs/cern.ch/user/s/soffi/public/10C23D4F-94BD-E811-9588-E0071B7B2320.root'
-#                                '/store/mc/RunIIAutumn18MiniAOD/BuToKJpsi_Toee_Mufilter_SoftQCDnonD_TuneCP5_13TeV-pythia8-evtgen/MINIAODSIM/PUPoissonAve20_BParking_102X_upgrade2018_realistic_v15-v2/60000/854B1DC0-2F71-694D-A3F5-8DC1CDE1EF18.root'
-#                                    'file:/afs/cern.ch/work/m/mcampana/public/Tetraquark/GenProduction/BPH-RunIISummer20UL18MiniAODv2-00008.root'
-#                                    '/store/cmst3/group/bpark/BToKmumu_1000Events_MINIAOD.root'
-#                                '/store/data/Run2018B/ParkingBPH4/MINIAOD/05May2019-v2/230000/6B5A24B1-0E6E-504B-8331-BD899EB60110.root'
-#                                'file:/afs/cern.ch/work/m/mcampana/public/Tetraquark/BPH-RunIISummer20UL18MiniAODv2-00008.root'
-#                                    'file:/afs/cern.ch/user/m/mcampana/public/MiniAOD_Y.root'
-#                                    '/store/user/mcampana/BPH_Production/private_XToYYTo2mu2e_step2/privateBPH_2021Apr28/210428_062206/0000/BPH-RunIISummer20UL18MiniAOD-14GeV_2.root',
-#          '/store/user/mcampana/BPH_Production/private_XToYYTo2mu2e_step2/privateBPH_2021Apr28/210428_062206/0000/BPH-RunIISummer20UL18MiniAOD-14GeV_3.root',
-#          '/store/user/mcampana/BPH_Production/private_XToYYTo2mu2e_step2/privateBPH_2021Apr28/210428_062206/0000/BPH-RunIISummer20UL18MiniAOD-14GeV_4.root',
-#          '/store/user/mcampana/BPH_Production/private_XToYYTo2mu2e_step2/privateBPH_2021Apr28/210428_062206/0000/BPH-RunIISummer20UL18MiniAOD-14GeV_5.root',
-#          '/store/user/mcampana/BPH_Production/private_XToYYTo2mu2e_step2/privateBPH_2021Apr28/210428_062206/0000/BPH-RunIISummer20UL18MiniAOD-14GeV_6.root',
-#          '/store/user/mcampana/BPH_Production/private_XToYYTo2mu2e_step2/privateBPH_2021Apr28/210428_062206/0000/BPH-RunIISummer20UL18MiniAOD-14GeV_7.root',
-#          '/store/user/mcampana/BPH_Production/private_XToYYTo2mu2e_step2/privateBPH_2021Apr28/210428_062206/0000/BPH-RunIISummer20UL18MiniAOD-14GeV_8.root',
-#          '/store/user/mcampana/BPH_Production/private_XToYYTo2mu2e_step2/privateBPH_2021Apr28/210428_062206/0000/BPH-RunIISummer20UL18MiniAOD-14GeV_9.root'
                                     '/store/user/mcampana/BPH_Production/private_XToYYTo2mu2e_26GeV_pseudoscalar/privateBPH_2021Apr30/210430_141958/0000/BPH-RunIISummer20UL18MiniAOD-26GeV_22.root'
 
               )
@@ -225,6 +210,8 @@ process.egmGsfElectronIDSequence = cms.Sequence(process.egmGsfElectronIDTask)
 
 
 #6. setting Analyzer
+Path=["HLT_Dimuon12_Upsilon_y1p4","HLT_Dimuon24_Upsilon_noCorrL1","HLT_DoubleMu3_DoubleEle7p5_CaloIdL_TrackIdL_Upsilon","HLT_DoubleMu5_Upsilon_DoubleEle3_CaloIdL_TrackIdL","HLT_Dimuon0_Upsilon_L1_4p5NoOS_v","HLT_Dimuon0_Upsilon_L1_4p5_v","HLT_Dimuon0_Upsilon_L1_4p5er2p0M_v","HLT_Dimuon0_Upsilon_L1_4p5er2p0_v","HLT_Dimuon0_Upsilon_L1_5M_v"]
+
 process.GenAnalysis = cms.EDAnalyzer('TQGenAnalyzer',
                                      generatorInfo= cms.InputTag("generator"),
                                      prunedGenParticles    = cms.InputTag("prunedGenParticles"),
@@ -235,7 +222,8 @@ process.GenAnalysis = cms.EDAnalyzer('TQGenAnalyzer',
                                      rho= cms.InputTag('fixedGridRhoAll'),
                                      PileUp = cms.InputTag('slimmedAddPileupInfo'),
                                      bits         = cms.InputTag("TriggerResults::HLT"),
-                                     flags        = cms.InputTag("TriggerResults::SIM"),
+                                     objects = cms.InputTag("slimmedPatTrigger"),
+                                     HLTPaths=cms.vstring(Path),
                                      year  = cms.untracked.int32(year),
                                      sampleIndex  = cms.untracked.int32(index),
                                      sampleXsec  = cms.untracked.double(xsec),

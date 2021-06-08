@@ -2,7 +2,7 @@ from CRABClient.UserUtilities import config
 config = config()
 
 ## Name of output directory ##
-config.General.requestName = 'MuOnia_Run2018B-UL2018_MiniAODv2-v1_SR'
+config.General.requestName = 'MuOnia_Run2018A-UL2018_MiniAODv2-v1_SR'
 config.General.workArea    = 'crab_projects'
 
 ## Input analyzer pset ## 
@@ -22,7 +22,7 @@ config.JobType.allowUndistributedCMSSW = True
 ## Input Data ##
 #config.Data.inputDataset   = '/MuOnia/Run2018B-12Nov2019_UL2018-v1/MINIAOD'
 #config.Data.inputDBS = 'global'
-config.Data.userInputFiles = open('MuOnia_Run2018B-UL2018_MiniAODv2-v1.txt').readlines()
+config.Data.userInputFiles = open('MuOnia_Run2018A-UL2018_MiniAODv2-v1.txt').readlines()
 config.Data.unitsPerJob    = 1
 config.Data.splitting      = 'FileBased' 
 
@@ -30,7 +30,7 @@ config.Data.splitting      = 'FileBased'
 #config.Site.whitelist     = ['T1_US_FNAL']
 
 ## Output Data ##
-config.Data.outputPrimaryDataset = 'MuOnia_Run2018B-UL2018_MiniAODv2-v1'
+config.Data.outputPrimaryDataset = 'MuOnia_Run2018A-UL2018_MiniAODv2-v1'
 config.Data.publication   = False
 config.Site.storageSite   = 'T2_CH_CERN'
 config.Data.outLFNDirBase = '/store/group/phys_egamma/soffi/TQ-DATA/'

@@ -34,13 +34,13 @@ process.source = cms.Source("PoolSource",
                                 fileNames = cms.untracked.vstring(
 #                                    'file:/afs/cern.ch/work/m/mcampana/public/Tetraquark/file_Livia/3BD19FEE-D15E-E94A-8BD6-6E9FD51C30DD.root'
 '/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/1DEB10DF-DED6-EB41-9F81-E9FAC4C14E50.root',
-'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/1FCA1F99-E4E6-4245-B805-6C129C6E1999.root',
-'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/2CE85E03-23C8-664B-A387-A609BF45DBFA.root',
+#'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/1FCA1F99-E4E6-4245-B805-6C129C6E1999.root',
+#'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/2CE85E03-23C8-664B-A387-A609BF45DBFA.root',
 #'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/4E420F59-A2A1-544B-B7B6-D020C8833EE2.root',
-'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/57DF48CC-2B91-544F-BCA8-A7D6C689BF04.root',
-'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/5A489C88-595E-A748-B3DC-155619EFB607.root',
-'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/5D12A107-F424-864D-AFD4-486FE7E29D0D.root',
-'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/6A6D66E6-6641-9E40-9D65-AB861267DA3E.root'
+#'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/57DF48CC-2B91-544F-BCA8-A7D6C689BF04.root',
+#'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/5A489C88-595E-A748-B3DC-155619EFB607.root',
+#'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/5D12A107-F424-864D-AFD4-486FE7E29D0D.root',
+#'/store/data/Run2018B/MuOnia/MINIAOD/UL2018_MiniAODv2-v1/30001/6A6D66E6-6641-9E40-9D65-AB861267DA3E.root'
 
 
               )
@@ -218,7 +218,9 @@ process.egmGsfElectronIDSequence = cms.Sequence(process.egmGsfElectronIDTask)
 
 
 #6. setting Analyzer
-Path=["HLT_Dimuon12_Upsilon_y1p4","HLT_Dimuon24_Upsilon_noCorrL1","HLT_DoubleMu3_DoubleEle7p5_CaloIdL_TrackIdL_Upsilon","HLT_DoubleMu5_Upsilon_DoubleEle3_CaloIdL_TrackIdL"]
+Path=["HLT_Dimuon12_Upsilon_y1p4","HLT_Dimuon24_Upsilon_noCorrL1","HLT_DoubleMu3_DoubleEle7p5_CaloIdL_TrackIdL_Upsilon","HLT_DoubleMu5_Upsilon_DoubleEle3_CaloIdL_TrackIdL","HLT_Dimuon0_Upsilon_L1_4p5NoOS_v","HLT_Dimuon0_Upsilon_L1_4p5_v","HLT_Dimuon0_Upsilon_L1_4p5er2p0M_v","HLT_Dimuon0_Upsilon_L1_4p5er2p0_v","HLT_Dimuon0_Upsilon_L1_5M_v"]
+
+
 process.GenAnalysis = cms.EDAnalyzer('TQGenAnalyzer',
                                      generatorInfo= cms.InputTag("generator"),
                                      prunedGenParticles    = cms.InputTag("prunedGenParticles"),

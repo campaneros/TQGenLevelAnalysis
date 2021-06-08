@@ -13,7 +13,8 @@ config.JobType.inputFiles  = ['lowPtEleReg_2018_02062020_nv.db',
                              'pileup_2018.root',
                              'pileup_2017.root',
                              'pileup_2016.root',
-                             'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt',
+                              'nvtx_weights_2018UL.root',
+                              'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt',
                              'Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt',
                               'Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt']
 config.JobType.allowUndistributedCMSSW = True
@@ -29,7 +30,7 @@ config.Data.splitting      = 'FileBased'
 #config.Site.whitelist     = ['T1_US_FNAL']
 
 ## Output Data ##
-config.Data.outputPrimaryDataset = 'ggXToYYTo2mu2e_m26_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_100K'
+config.Data.outputPrimaryDataset = 'ggXToYYTo2mu2e_m26_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_100K_wTrigger'
 config.Data.publication   = False
 config.Site.storageSite   = 'T2_CH_CERN'
 config.Data.outLFNDirBase = '/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/'
