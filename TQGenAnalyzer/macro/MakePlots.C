@@ -36,7 +36,6 @@ using namespace std;
 TGraphErrors* makeCutFlowTableGen(std::string mass, bool isRel){
   TFile* f;
 
-  if(mass=="7") f= new TFile("/eos/cms/store/group/phys_egamma/soffi/ggXToJJTo2mu2e/ntuple_ggXToJJTo2mu2e_m7_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_100K.root");
   if(mass=="9") f= new TFile("/eos/cms/store/group/phys_egamma/soffi/ggXToJJTo2mu2e/ntuple_ggXToJJTo2mu2e_m9_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_100K.root");
   if(mass=="14") f= new TFile("/eos/cms/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/ntuple_ggXToYYTo2mu2e_m14_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_20K.root");
   if(mass=="26") f= new TFile("/eos/cms/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/ntuple_ggXToYYTo2mu2e_m26_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_100K.root");
