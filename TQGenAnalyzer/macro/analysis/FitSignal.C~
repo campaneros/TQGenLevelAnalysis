@@ -1,0 +1,340 @@
+ 
+#include "RooBreitWigner.h"
+#include "RooCBShape.h" 
+ #include "RooRealVar.h"
+ #include "RooDataSet.h"
+ #include "RooAddPdf.h"
+ #include "RooGaussian.h"
+ #include "RooLandau.h"
+ #include "RooFFTConvPdf.h"
+ #include "RooFitResult.h"
+ #include "RooPlot.h"
+ #include "RooArgList.h"
+ #include "RooAbsArg.h"
+ #include "TCanvas.h"
+ #include "TAxis.h"
+ #include "TFile.h"
+
+#include "TH1.h"
+#include "TLegend.h"
+#include "TGraphErrors.h"
+using namespace RooFit ;
+ 
+ 
+ 
+RooFitResult* fit_convolution(std::string mass, double mass0)
+{
+
+  TFile *f = new TFile(("fout_m"+mass+"_TQ.root").c_str(), "READ");
+  TTree *tree = (TTree*)f->Get("tree_red");
+  RooRealVar TQ_mass("TQ_mass","TQ_mass",0,50) ;
+
+  RooDataSet data("data","data",tree, RooArgSet(TQ_mass) );
+ 
+
+
+ 
+  // Breit-Wigner
+  RooRealVar m0( "m0", "m0", mass0, mass0*0.99,mass0*1.01 );
+  RooRealVar width( "width", "width", mass0*0.0002, mass0*0.00002,mass0*0.002 );
+  RooBreitWigner bw( "bw", "bw", TQ_mass, m0, width );
+
+  // Crystal-Ball
+
+  //  RooRealVar mean( "mean", "mean", mass0, 0.9*mass0,1.1*mass0);
+  RooRealVar mean( "mean", "mean", 0.);
+  RooRealVar sigma( "sigma", "sigma", 0.5,0.1,5);
+  RooRealVar alpha( "alpha", "alpha", 1.4,0.1,5 );
+  RooRealVar n( "n", "n", 1.8,0.1,5);
+  RooCBShape cb( "cb", "cb", TQ_mass, mean, sigma, alpha, n );
+
+  // Crystal-Ball pos
+  RooRealVar mean_pos( "mean_pos", "mean_pos",mass0, 0.9*mass0,1.1*mass0);
+  RooRealVar sigma_pos( "sigma_pos", "sigma_pos", 0.5,0.05,5 );
+  RooRealVar alpha_pos( "alpha_pos", "alpha_pos", -1.4,-5,-0.1 );
+  RooRealVar n_pos( "n_pos", "n_pos", 1.8,0.1,3);
+  RooCBShape cb_pos( "cb_pos", "cb_pos", TQ_mass, mean, sigma, alpha_pos, n_pos );
+
+
+  // Gaus
+  RooRealVar mu( "mu", "mu", mass0);
+  RooRealVar sigm( "sigm", "sigm", 3,0.1,10 );
+  RooGaussian g( "g", "g", TQ_mass, mu, sigm);
+
+  // convolution
+  TQ_mass.setBins(10000,"cache") ;
+  TQ_mass.setMin("cache",0.) ;
+  TQ_mass.setMax("cache",50) ;
+
+  RooRealVar cb1frac("cb1frac", "fraction of component 1 in signal", 0.8, 0., 1.);
+  RooAddPdf cbadd("cbadd", "Signal", RooArgList(cb, cb_pos), cb1frac);
+  RooRealVar sig1frac("sig1frac", "fraction of component 1 in signal", 0.5, 0., 1.);
+  RooAddPdf addpdf("cbadd", "Signal", RooArgList(bw, cbadd), sig1frac);
+
+
+
+  RooFFTConvPdf pdf( "pdf", "pdf", TQ_mass, bw,cb_pos);
+  RooFFTConvPdf pdf1( "pdf1", "pdf1", TQ_mass, pdf, cb);
+  RooFFTConvPdf pdf2( "pdf2", "pdf2", TQ_mass, cb,cb_pos);
+  RooFFTConvPdf pdf3( "pdf3", "pdf3", TQ_mass, bw,cbadd);
+
+
+  RooFitResult* r =  pdf3.fitTo(data,Save());
+  RooCBShape cb1( "cb1", "cb1", TQ_mass, m0, sigma, alpha, n );
+  RooCBShape cb1_pos( "cb1_pos", "cb1_pos", TQ_mass, m0, sigma, alpha_pos, n_pos );
+  TCanvas canv( "canv", "canv", 800., 600. );
+  RooPlot* plot = TQ_mass.frame();
+  plot -> SetTitle( "Convolution of a Breit-Wigner and a Crystal-Ball" );
+  plot -> GetXaxis() -> SetTitle("TQ mass");
+  plot -> GetYaxis() -> SetTitleOffset( 1.5 );
+  data.plotOn(plot);
+  pdf3.plotOn( plot );
+  //  pdf3.plotOn( plot , Components(bw), LineColor(kPink));
+
+  bw.plotOn(plot,LineColor(kGreen),LineStyle(kDashed),LineWidth(1));
+  cb1.plotOn(plot,LineColor(kRed),LineStyle(kDashed),LineWidth(1));
+  cb1_pos.plotOn(plot,LineColor(kOrange),LineStyle(kDashed),LineWidth(1));
+
+  TH1F* h = new TH1F("h","h",50,0,40);
+  TH1F* h1 = new TH1F("h1","h",50,0,40);
+  TH1F* h2 = new TH1F("h2","h",50,0,40);
+  TH1F* h3 = new TH1F("h3","h",50,0,40);
+  h->SetLineColor(kBlue);
+  h1->SetLineColor(kRed);
+  h2->SetLineColor(kOrange);
+  h3->SetLineColor(kGreen);
+  h1->SetLineStyle(kDashed);
+  h2->SetLineStyle(kDashed);
+  h3->SetLineStyle(kDashed);
+  h->GetYaxis()->SetTitle("Events");
+  h->GetXaxis()->SetTitle("m_{TQ} [GeV]");
+  h->GetYaxis()->SetRangeUser(0.01,2500);
+  h -> Draw("");
+
+
+  TLegend* leg = new TLegend(0.2, 0.55, 0.5,0.85);
+  leg->AddEntry(h, "BW #otimes (CB1+CB2)", "L");
+  leg->AddEntry(h1, "CB1","L");
+  leg->AddEntry(h2, "CB2","L");
+  leg->AddEntry(h3, "BW","L");
+  leg->Draw("same");
+  plot -> Draw("Same");
+  canv.SaveAs( ("~/www/TQ-WORK/mass/fitSignal_m"+mass+".png").c_str() );
+  canv.SaveAs( ("~/www/TQ-WORK/mass/fitSignal_m"+mass+".pdf").c_str() );
+  canv.SetLogy();
+  canv.SaveAs( ("~/www/TQ-WORK/mass/fitSignal_m"+mass+"_LOG.png").c_str() );
+  canv.SaveAs( ("~/www/TQ-WORK/mass/fitSignal_m"+mass+"_LOG.pdf").c_str() );
+ 
+  return r;
+ 
+}
+ 
+
+
+void fitAll(){
+
+  RooFitResult* r18=  fit_convolution("18",18);
+  RooFitResult* r22=  fit_convolution("22",22);
+  RooFitResult* r26=  fit_convolution("26",26);
+
+  RooRealVar* m18 = (RooRealVar*) r18->floatParsFinal().find("m0");
+  double m18val = m18->getVal();
+  double m18err = m18->getError();
+  RooRealVar* w18 = (RooRealVar*) r18->floatParsFinal().find("width");
+  double w18val = w18->getVal();
+  double w18err = w18->getError();
+  RooRealVar* sigma18 = (RooRealVar*) r18->floatParsFinal().find("sigma");
+  double sigma18val = sigma18->getVal();
+  double sigma18err = sigma18->getError();
+  /*  RooRealVar* sigma_pos18 = (RooRealVar*) r18->floatParsFinal().find("sigma_pos");
+  double sigma_pos18val = sigma_pos18->getVal();
+  double sigma_pos18err = sigma_pos18->getError();
+  */
+  RooRealVar* alpha18 = (RooRealVar*) r18->floatParsFinal().find("alpha");
+  double alpha18val = alpha18->getVal();
+  double alpha18err = alpha18->getError();
+  RooRealVar* alpha_pos18 = (RooRealVar*) r18->floatParsFinal().find("alpha_pos");
+  double alpha_pos18val = alpha_pos18->getVal();
+  double alpha_pos18err = alpha_pos18->getError();
+  RooRealVar* n18 = (RooRealVar*) r18->floatParsFinal().find("n");
+  double n18val = n18->getVal();
+  double n18err = n18->getError();
+  RooRealVar* n_pos18 = (RooRealVar*) r18->floatParsFinal().find("n_pos");
+  double n_pos18val = n_pos18->getVal();
+  double n_pos18err = n_pos18->getError();
+  RooRealVar* cb1frac18 = (RooRealVar*) r18->floatParsFinal().find("cb1frac");
+  double cb1frac18val = cb1frac18->getVal();
+  double cb1frac18err = cb1frac18->getError();
+
+  RooRealVar* m22 = (RooRealVar*) r22->floatParsFinal().find("m0");
+  double m22val = m22->getVal();
+  double m22err = m22->getError();
+  RooRealVar* w22 = (RooRealVar*) r22->floatParsFinal().find("width");
+  double w22val = w22->getVal();
+  double w22err = w22->getError();
+  RooRealVar* sigma22 = (RooRealVar*) r22->floatParsFinal().find("sigma");
+  double sigma22val = sigma22->getVal();
+  double sigma22err = sigma22->getError();
+  /*RooRealVar* sigma_pos22 = (RooRealVar*) r22->floatParsFinal().find("sigma_pos");
+  double sigma_pos22val = sigma_pos22->getVal();
+  double sigma_pos22err = sigma_pos22->getError();
+  */
+  RooRealVar* alpha22 = (RooRealVar*) r22->floatParsFinal().find("alpha");
+  double alpha22val = alpha22->getVal();
+  double alpha22err = alpha22->getError();
+  RooRealVar* alpha_pos22 = (RooRealVar*) r22->floatParsFinal().find("alpha_pos");
+  double alpha_pos22val = alpha_pos22->getVal();
+  double alpha_pos22err = alpha_pos22->getError();
+  RooRealVar* n22 = (RooRealVar*) r22->floatParsFinal().find("n");
+  double n22val = n22->getVal();
+  double n22err = n22->getError();
+  RooRealVar* n_pos22 = (RooRealVar*) r22->floatParsFinal().find("n_pos");
+  double n_pos22val = n_pos22->getVal();
+  double n_pos22err = n_pos22->getError();
+  RooRealVar* cb1frac22 = (RooRealVar*) r22->floatParsFinal().find("cb1frac");
+  double cb1frac22val = cb1frac22->getVal();
+  double cb1frac22err = cb1frac22->getError();
+
+
+  RooRealVar* m26 = (RooRealVar*) r26->floatParsFinal().find("m0");
+  double m26val = m26->getVal();
+  double m26err = m26->getError();
+  RooRealVar* w26 = (RooRealVar*) r26->floatParsFinal().find("width");
+  double w26val = w26->getVal();
+  double w26err = w26->getError();
+  RooRealVar* sigma26 = (RooRealVar*) r26->floatParsFinal().find("sigma");
+  double sigma26val = sigma26->getVal();
+  double sigma26err = sigma26->getError();
+  /*  RooRealVar* sigma_pos26 = (RooRealVar*) r26->floatParsFinal().find("sigma_pos");
+  double sigma_pos26val = sigma_pos26->getVal();
+  double sigma_pos26err = sigma_pos26->getError();
+  */
+  RooRealVar* alpha26 = (RooRealVar*) r26->floatParsFinal().find("alpha");
+  double alpha26val = alpha26->getVal();
+  double alpha26err = alpha26->getError();
+  RooRealVar* alpha_pos26 = (RooRealVar*) r26->floatParsFinal().find("alpha_pos");
+  double alpha_pos26val = alpha_pos26->getVal();
+  double alpha_pos26err = alpha_pos26->getError();
+  RooRealVar* n26 = (RooRealVar*) r26->floatParsFinal().find("n");
+  double n26val = n26->getVal();
+  double n26err = n26->getError();
+  RooRealVar* n_pos26 = (RooRealVar*) r26->floatParsFinal().find("n_pos");
+  double n_pos26val = n_pos26->getVal();
+  double n_pos26err = n_pos26->getError();
+  RooRealVar* cb1frac26 = (RooRealVar*) r26->floatParsFinal().find("cb1frac");
+  double cb1frac26val = cb1frac26->getVal();
+  double cb1frac26err = cb1frac26->getError();
+
+
+
+  double mass_vec[3]={18,22,26};
+  double massErr_vec[3]={0};
+
+  double m0_vec[3]={(m18val-18)/18,(m22val-22)/22,(m26val-26)/26};
+  double m0Err_vec[3]={m18err/18,m22err/22,m26err/22};
+
+  double w_vec[3]={w18val,w22val,w26val};
+  double wErr_vec[3]={w18err,w22err,w26err};
+
+  double cb1frac_vec[3]={cb1frac18val,cb1frac22val,cb1frac26val};
+  double cb1fracErr_vec[3]={cb1frac18err,cb1frac22err,cb1frac26err};
+
+  double sigma_vec[3]={sigma18val,sigma22val,sigma26val};
+  double sigmaErr_vec[3]={sigma18err,sigma22err,sigma26err};
+  //double sigma_pos_vec[3]={sigma_pos18val,sigma_pos22val,sigma_pos26val};
+  //double sigma_posErr_vec[3]={sigma_pos18err,sigma_pos22err,sigma_pos26err};
+
+
+  double alpha_vec[3]={alpha18val,alpha22val,alpha26val};
+  double alphaErr_vec[3]={alpha18err,alpha22err,alpha26err};
+  double alpha_pos_vec[3]={alpha_pos18val,alpha_pos22val,alpha_pos26val};
+  double alpha_posErr_vec[3]={alpha_pos18err,alpha_pos22err,alpha_pos26err};
+
+  double n_vec[3]={n18val,n22val,n26val};
+  double nErr_vec[3]={n18err,n22err,n26err};
+  double n_pos_vec[3]={n_pos18val,n_pos22val,n_pos26val};
+  double n_posErr_vec[3]={n_pos18err,n_pos22err,n_pos26err};
+
+  TGraphErrors* g_m0 = new TGraphErrors(3,mass_vec,m0_vec,massErr_vec,m0Err_vec);
+
+  TGraphErrors* g_w = new TGraphErrors(3,mass_vec,w_vec,massErr_vec,wErr_vec);
+
+  TGraphErrors* g_cb1frac = new TGraphErrors(3,mass_vec,cb1frac_vec,massErr_vec,cb1fracErr_vec);
+
+  TGraphErrors* g_sigma = new TGraphErrors(3,mass_vec,sigma_vec,massErr_vec,sigmaErr_vec);
+
+  //  TGraphErrors* g_sigma_pos = new TGraphErrors(3,mass_vec,sigma_pos_vec,massErr_vec,sigma_posErr_vec);
+
+  TGraphErrors* g_alpha = new TGraphErrors(3,mass_vec,alpha_vec,massErr_vec,alphaErr_vec);
+
+  TGraphErrors* g_alpha_pos = new TGraphErrors(3,mass_vec,alpha_pos_vec,massErr_vec,alpha_posErr_vec);
+
+  TGraphErrors* g_n = new TGraphErrors(3,mass_vec,n_vec,massErr_vec,nErr_vec);
+
+  TGraphErrors* g_n_pos = new TGraphErrors(3,mass_vec,n_pos_vec,massErr_vec,n_posErr_vec);
+
+
+  TCanvas* canv=new TCanvas( "canv", "canv", 800., 600. );
+  g_m0->Draw("APE");
+  g_m0->GetXaxis()->SetTitle("m_{TQ} [GeV]");
+  g_m0->GetYaxis()->SetTitle("#frac{m_{TQ} - m_{nominal}}{m_{nominal}}");
+  canv->SaveAs("~/www/TQ-WORK/mass/m0_vs_mass.png");
+  canv->SaveAs("~/www/TQ-WORK/mass/m0_vs_mass.pdf");
+
+  g_w->Draw("APE");
+  g_w->GetXaxis()->SetTitle("m_{TQ} [GeV]");
+  g_w->GetYaxis()->SetTitle("#Gamma_{TQ} [GeV]");
+
+  canv->SaveAs("~/www/TQ-WORK/mass/w_vs_mass.png");
+  canv->SaveAs("~/www/TQ-WORK/mass/w_vs_mass.pdf");
+
+  g_cb1frac->Draw("APE");
+  g_cb1frac->GetXaxis()->SetTitle("m_{TQ} [GeV]");
+  g_cb1frac->GetYaxis()->SetTitle("CB1/CB2");
+
+  canv->SaveAs("~/www/TQ-WORK/mass/cb1frac_vs_mass.png");
+  canv->SaveAs("~/www/TQ-WORK/mass/cb1frac_vs_mass.pdf");
+
+  g_sigma->Draw("APE");
+  g_sigma->GetXaxis()->SetTitle("m_{TQ} [GeV]");
+  g_sigma->GetYaxis()->SetTitle("#sigma_{CB} [GeV]");
+
+  canv->SaveAs("~/www/TQ-WORK/mass/sigma_vs_mass.png");
+  canv->SaveAs("~/www/TQ-WORK/mass/sigma_vs_mass.pdf");
+
+  /*
+  g_sigma_pos->Draw("APE");
+  canv->SaveAs("~/www/TQ-WORK/mass/sigma_pos_vs_mass.png");
+  canv->SaveAs("~/www/TQ-WORK/mass/sigma_pos_vs_mass.pdf");
+  */
+
+  g_alpha->Draw("APE");
+  g_alpha->GetXaxis()->SetTitle("m_{TQ} [GeV]");
+  g_alpha->GetYaxis()->SetTitle("#alpha_{CB1}");
+
+  canv->SaveAs("~/www/TQ-WORK/mass/alpha_vs_mass.png");
+  canv->SaveAs("~/www/TQ-WORK/mass/alpha_vs_mass.pdf");
+
+  g_alpha_pos->Draw("APE");
+  g_alpha_pos->GetXaxis()->SetTitle("m_{TQ} [GeV]");
+  g_alpha_pos->GetYaxis()->SetTitle("#alpha_{CB2}");
+
+  canv->SaveAs("~/www/TQ-WORK/mass/alpha_pos_vs_mass.png");
+  canv->SaveAs("~/www/TQ-WORK/mass/alpha_pos_vs_mass.pdf");
+
+  g_n->Draw("APE");
+  g_n->GetXaxis()->SetTitle("m_{TQ} [GeV]");
+  g_n->GetYaxis()->SetTitle("n_{CB1}");
+
+  canv->SaveAs("~/www/TQ-WORK/mass/n_vs_mass.png");
+  canv->SaveAs("~/www/TQ-WORK/mass/n_vs_mass.pdf");
+
+  g_n_pos->Draw("APE");
+  g_n_pos->GetXaxis()->SetTitle("m_{TQ} [GeV]");
+  g_n_pos->GetYaxis()->SetTitle("n_{CB2}");
+
+  canv->SaveAs("~/www/TQ-WORK/mass/n_pos_vs_mass.png");
+  canv->SaveAs("~/www/TQ-WORK/mass/n_pos_vs_mass.pdf");
+
+
+}

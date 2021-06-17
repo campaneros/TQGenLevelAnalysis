@@ -287,8 +287,9 @@ void compareEffGen(){
 }
 
 void plotTriggerPerformance(){
-  TFile* f= new TFile("/eos/cms/store/group/phys_bphys/soffi/ntuple_MuOnia_Run2018B-UL2018_MiniAODv2-v1-woTrigger.root");
+  TFile* f= new TFile("/eos/cms/store/group/phys_egamma/soffi/TQ-DATA/ntuple_MuOnia_Run2018ABCD-UL2018_MiniAODv2-v1_wPrescaledTrigger.root");
   TTree* t = (TTree*)f->Get("GenAnalysis/tree");
+
   TH1F* hnum_pt = new TH1F("hnum_pt", "hnum", 60,0,60);
   TH1F* hden_pt = new TH1F("hden_pt", "hden", 60,0,60);
   TH1F* hnum_eta = new TH1F("hnum_eta", "hnum", 20,-5,5);
@@ -304,14 +305,52 @@ void plotTriggerPerformance(){
 
   hnum_pt->Divide(hden_pt);
   hnum_eta->Divide(hden_eta);
-  TLegend* leg1 = new TLegend(0.2,0.65, 0.6,0.85);
-  leg1->SetFillColor(kWhite);
-  leg1->AddEntry(hnum_pt," Trigger Efficiency" , "PLE");
   
+
+
+  TFile* fsig = new TFile("/eos/cms/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/ntuple_ggXToYYTo2mu2e_m26_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_100K_woTrigger.root");
+  TTree* tsig = (TTree*)fsig->Get("GenAnalysis/tree");
+  TH1F* hsig_pt = new TH1F("hsig_pt", "hsig_pt", 60,0,60);
+  TH1F* hsig_eta = new TH1F("hsig_eta", "hsig_eta", 20,-5,5);
+  hsig_pt->Sumw2();
+  hsig_eta->Sumw2();
+  tsig->Draw("recoTQ_Y1pt>>hsig_pt","(HLT_Dimuon0_prescaled_2018&&recoTQ_Y1vtxprob>0.5&&recoTQ_softID1&&recoTQ_softID2&&recoTQ_Y1pt<100)*nvtxw_2018");
+  tsig->Draw("recoTQ_Y1eta>>hsig_eta","(HLT_Dimuon0_prescaled_2018&&recoTQ_Y1vtxprob>0.5&&recoTQ_softID1&&recoTQ_softID2&&recoTQ_Y1pt<100)*nvtxw_2018");
+  hsig_pt->SetLineColor(kOrange+6);
+  hsig_eta->SetLineColor(kOrange+6);
+
+
+  double tot = t->GetEntries("HLT_Dimuon0_prescaled_2018&&(HLT_Dimuon12_Upsilon_y1p4_v_2018||HLT_Dimuon24_Upsilon_noCorrL1_v_2018)");
+  double dimu12 = t->GetEntries("HLT_Dimuon0_prescaled_2018&&(HLT_Dimuon12_Upsilon_y1p4_v_2018)&&!HLT_Dimuon24_Upsilon_noCorrL1_v_2018");
+  double dimu24 = t->GetEntries("HLT_Dimuon0_prescaled_2018&&(HLT_Dimuon24_Upsilon_noCorrL1_v_2018)");
+  
+  std::cout<<tot<<" 12: "<<dimu12<<" 24: "<<dimu24<<std::endl;
+
+  TH1F* h_trig = new TH1F("h_trig","h_trig", 2,0,2);
+  h_trig->SetBinContent(1,dimu12/tot);
+  h_trig->SetBinContent(2,dimu24/tot);
+  h_trig->GetYaxis()->SetTitle("Fired trigger fractions");
+  h_trig->GetXaxis()->SetBinLabel(1,"HLT_Dimuon12");
+  h_trig->GetXaxis()->SetBinLabel(2,"HLT_Dimuon24");
 
   TCanvas* c = new TCanvas("c","c",1);
   c->cd();
+  h_trig->SetFillColor(kOrange+6);
+  h_trig->Draw("hist");
+  c->SaveAs("~/www/TQ-WORK/kin/trigger_fractions.png");
+  c->SaveAs("~/www/TQ-WORK/kin/trigger_fractions.pdf");
+
+  TLegend* leg1 = new TLegend(0.5,0.6, 0.8,0.74);
+  leg1->SetFillColor(kWhite);
+  leg1->AddEntry(hnum_pt," #splitline{Trigger Efficiency:}{2018 UL Data (58.93 fb^{-1})}" , "PLE");
+  leg1->AddEntry(hsig_pt," TQ: 26 GeV" , "LE");
+  
+
+  hnum_pt->GetXaxis()->SetTitle("#Upsilon_{#mu#mu} p_{T} [GeV]");
+  //  hnum_pt->GetYaxis()->SetTitle("Trigger Efficiency");
   hnum_pt->Draw("PE");
+  hsig_pt->Scale(5./hsig_pt->Integral());
+  hsig_pt->Draw("histsame");
   leg1->Draw("same");
   c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_pt.png");
   c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_pt.pdf");
@@ -320,7 +359,11 @@ void plotTriggerPerformance(){
   c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_pt_LOG.pdf");
 
   c->SetLogy(0);
+  //  hnum_eta->GetYaxis()->SetTitle("Trigger Efficiency");
+  hnum_eta->GetXaxis()->SetTitle("#Upsilon_{#mu#mu} #eta");
   hnum_eta->Draw("PE");
+  hsig_eta->Scale(5./hsig_eta->Integral());
+  hsig_eta->Draw("histsame");
   leg1->Draw("same");
   c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_eta.png");
   c->SaveAs("~/www/TQ-WORK/kin/trigger_efficiency_vs_eta.pdf");
@@ -333,18 +376,19 @@ void plotTriggerPerformance(){
 
 void compareEffDi(){
 
-
+  /*
   
 
   TFile* f5= new TFile("analysis/fout_m5.root");
   TFile* f7= new TFile("analysis/fout_m7.root");
   TFile* f9= new TFile("analysis/fout_m9.root");
-  
-  TFile* f26= new TFile("analysis/fout_m26_TQ.root");
-  TFile* f22= new TFile("analysis/fout_m22_TQ.root");
-  TFile* f18= new TFile("analysis/fout_m18_TQ.root");
-  TFile* f14= new TFile("analysis/fout_m14_TQ.root");
-
+  */
+  TFile* f26= new TFile("analysis/fout_m26wTrigger_TQ.root");
+  TFile* f20= new TFile("analysis/fout_m20wTrigger_TQ.root");
+  //TFile* f22= new TFile("analysis/fout_m22_TQ.root");
+  TFile* f18= new TFile("analysis/fout_m18wTrigger_TQ.root");
+  //TFile* f14= new TFile("analysis/fout_m14_TQ.root");
+  /*
   TH1F* eff_5 =  (TH1F*)f5->Get("eff_counter");
   TH1F* effrel_5 =  (TH1F*)f5->Get("effrel_counter");
   TH1F* eff_7 =  (TH1F*)f7->Get("eff_counter");
@@ -353,15 +397,18 @@ void compareEffDi(){
   TH1F* effrel_9 =  (TH1F*)f9->Get("effrel_counter");
   TH1F* eff_14 =  (TH1F*)f14->Get("eff_counter");
   TH1F* effrel_14 =  (TH1F*)f14->Get("effrel_counter");
+  */
   TH1F* eff_18 =  (TH1F*)f18->Get("eff_counter");
   TH1F* effrel_18 =  (TH1F*)f18->Get("effrel_counter");
-  TH1F* eff_22 =  (TH1F*)f22->Get("eff_counter");
-  TH1F* effrel_22 =  (TH1F*)f22->Get("effrel_counter");
+  //TH1F* eff_22 =  (TH1F*)f22->Get("eff_counter");
+  //TH1F* effrel_22 =  (TH1F*)f22->Get("effrel_counter");
+  TH1F* eff_20 =  (TH1F*)f20->Get("eff_counter");
+  TH1F* effrel_20 =  (TH1F*)f20->Get("effrel_counter");
   TH1F* eff_26 =  (TH1F*)f26->Get("eff_counter");
   TH1F* effrel_26 =  (TH1F*)f26->Get("effrel_counter");
 
 
-  TLegend* leg1 = new TLegend(0.2,0.15, 0.6,0.45);
+  TLegend* leg1 = new TLegend(0.58,0.63, 0.85,0.85);
   leg1->SetFillColor(kWhite);
   //  leg1->SetBorderSize(0);
   leg1->SetHeader("Cut Flow - Absolute Efficiencies");
@@ -369,16 +416,16 @@ void compareEffDi(){
   leg1->AddEntry(eff_7," m_{TQ} = 7 GeV" , "PLE");
   leg1->AddEntry(eff_9," m_{TQ} = 9 GeV" , "PLE");
   */
-  leg1->AddEntry(eff_14," m_{TQ} = 14 GeV" , "PLE");
+  //  leg1->AddEntry(eff_14," m_{TQ} = 14 GeV" , "PLE");
   leg1->AddEntry(eff_18," m_{TQ} = 18 GeV" , "PLE");
-  leg1->AddEntry(eff_22," m_{TQ} = 22 GeV" , "PLE");
+  leg1->AddEntry(eff_20," m_{TQ} = 20 GeV" , "PLE");
   leg1->AddEntry(eff_26," m_{TQ} = 26 GeV" , "PLE");
 
 
   TCanvas* c = new TCanvas("c","c",900,400);
   c->cd();
   c->SetLogy();
-  eff_5->SetMarkerColor(kYellow+2);
+  /*  eff_5->SetMarkerColor(kYellow+2);
   eff_5->SetMarkerStyle(24);
   eff_5->SetLineColor(kYellow+2);
   eff_7->SetMarkerColor(kBlue+1);
@@ -389,13 +436,17 @@ void compareEffDi(){
   eff_9->SetLineColor(kCyan+2);
   eff_14->SetMarkerColor(kRed+2);
   eff_14->SetMarkerStyle(26);
-  eff_14->SetLineColor(kRed+2);
+  eff_14->SetLineColor(kRed+2);*/
   eff_18->SetMarkerColor(kGreen-6);
   eff_18->SetMarkerStyle(22);
   eff_18->SetLineColor(kGreen-6);
-  eff_22->SetMarkerColor(kOrange-3);
+  /*  eff_22->SetMarkerColor(kOrange-3);
   eff_22->SetMarkerStyle(21);
   eff_22->SetLineColor(kOrange-3);
+  */
+  eff_20->SetMarkerColor(kOrange+6);
+  eff_20->SetMarkerStyle(21);
+  eff_20->SetLineColor(kOrange+6);
   eff_26->SetMarkerColor(kPink-9);
   eff_26->SetMarkerStyle(20);
   eff_26->SetLineColor(kPink-9);
@@ -404,9 +455,8 @@ void compareEffDi(){
   eff_7->Draw("PEsame");
   eff_9->Draw("PEsame");
   */
-  eff_14->Draw("PE");
-  eff_18->Draw("PEsame");
-  eff_22->Draw("PEsame");
+  eff_18->Draw("PE");
+  eff_20->Draw("PEsame");
   eff_26->Draw("PEsame");
   leg1->Draw("same");
   c->SaveAs("~/www/TQ-WORK/eff/efftot_compareEffDi.png");
@@ -416,7 +466,7 @@ void compareEffDi(){
   c->cd();
   c->SetLogy(0);
 
-  effrel_5->SetMarkerColor(kYellow+2);
+  /*effrel_5->SetMarkerColor(kYellow+2);
   effrel_5->SetMarkerStyle(24);
   effrel_5->SetLineColor(kYellow+2);
   effrel_7->SetMarkerColor(kBlue+1);
@@ -428,12 +478,15 @@ void compareEffDi(){
   effrel_14->SetMarkerColor(kRed+2);
   effrel_14->SetMarkerStyle(26);
   effrel_14->SetLineColor(kRed+2);
-  effrel_18->SetMarkerColor(kGreen-6);
+  */  effrel_18->SetMarkerColor(kGreen-6);
   effrel_18->SetMarkerStyle(22);
   effrel_18->SetLineColor(kGreen-6);
-  effrel_22->SetMarkerColor(kOrange-3);
+  /*  effrel_22->SetMarkerColor(kOrange-3);
   effrel_22->SetMarkerStyle(21);
   effrel_22->SetLineColor(kOrange-3);
+  */  effrel_20->SetMarkerColor(kOrange+6);
+  effrel_20->SetMarkerStyle(21);
+  effrel_20->SetLineColor(kOrange+6);
   effrel_26->SetMarkerColor(kPink-9);
   effrel_26->SetMarkerStyle(20);
   effrel_26->SetLineColor(kPink-9);
@@ -441,23 +494,22 @@ void compareEffDi(){
   effrel_7->Draw("pesame");
   effrel_9->Draw("pesame");
   */
-  effrel_14->Draw("pe");
-  effrel_18->Draw("pesame");
-  effrel_22->Draw("pesame");
+  effrel_18->Draw("pe");
+  effrel_20->Draw("pesame");
   effrel_26->Draw("pesame");
   //  leg2->Draw("same");
   c->SaveAs("~/www/TQ-WORK/eff/effrel_compareEffDi.png");
   c->SaveAs("~/www/TQ-WORK/eff/effrel_compareEffDi.pdf");
  
-  /*
+  
   //plot eff vs mass (last bin of absolute trend
-  double effvsmass[7] = {(double)eff_5->GetBinContent(8),(double)eff_7->GetBinContent(8),(double)eff_9->GetBinContent(8),(double)eff_14->GetBinContent(8),(double)eff_18->GetBinContent(8),(double)eff_22->GetBinContent(8),(double)eff_26->GetBinContent(8)};
-  double efferrvsmass[7] = {(double)eff_5->GetBinError(8),(double)eff_7->GetBinError(8),(double)eff_9->GetBinError(8),(double)eff_14->GetBinError(8),(double)eff_18->GetBinError(8),(double)eff_22->GetBinError(8),(double)eff_26->GetBinError(8)};
-  double mass[7] = {5,7,9,14,18,22,26};
+  double effvsmass[3] = {(double)eff_18->GetBinContent(13),(double)eff_20->GetBinContent(13),(double)eff_26->GetBinContent(13)};
+  double efferrvsmass[3] = {(double)eff_18->GetBinError(13),(double)eff_20->GetBinError(13),(double)eff_26->GetBinError(13)};
+  double mass[3] = {18,20,26};
   double masserr[7]={0};
-  TGraphErrors* g = new TGraphErrors(7,mass, effvsmass,masserr,efferrvsmass);
+  TGraphErrors* g = new TGraphErrors(3,mass, effvsmass,masserr,efferrvsmass);
   TH1F* h = new TH1F("h","",30,0,30);
-  h->GetYaxis()->SetRangeUser(0.00001,1);
+  h->GetYaxis()->SetRangeUser(0.0000001,1);
   h->GetYaxis()->SetTitle("Total Efficiency");
   h->GetXaxis()->SetTitle("m_{TQ} [GeV]");
   h->Draw();
@@ -472,7 +524,7 @@ void compareEffDi(){
   c->SetLogy();
   c->SaveAs("~/www/TQ-WORK/eff/effvsmass_LOG.png");
   c->SaveAs("~/www/TQ-WORK/eff/effvsmass_LOG.pdf");
-  */
+  
 }
 
 void compareSigVsSPSandDPS(){
@@ -530,44 +582,44 @@ void compareSigVsSPSandDPS(){
   TH1F* nvtx_DPS_w = new TH1F("nvtx_DPS_w", "",50,0,100);
   TH1F* nvtx_data2018 = new TH1F("nvtx_data2018", "",50,0,100);
   
-  t26->Draw("TQ_mass>>mass_26");
-  t26->Draw("TQ_mass_tilde>>tmass_26");
-  t26->Draw("TQ_pt>>pt_26");
-  t26->Draw("TQ_eta>>eta_26");
-  t26->Draw("Ym_mass>>Ym_26");
-  t26->Draw("Ym_pt>>pt_Ym_26");
-  t26->Draw("Ym_eta>>eta_Ym_26");
-  t26->Draw("Ye_mass>>Ye_26");
-  t26->Draw("Ye_pt>>pt_Ye_26");
-  t26->Draw("Ye_eta>>eta_Ye_26");
+  t26->Draw("TQ_mass>>mass_26","nvtxw2018");
+  t26->Draw("TQ_mass_tilde>>tmass_26","nvtxw2018");
+  t26->Draw("TQ_pt>>pt_26","nvtxw2018");
+  t26->Draw("TQ_eta>>eta_26","nvtxw2018");
+  t26->Draw("Ym_mass>>Ym_26","nvtxw2018");
+  t26->Draw("Ym_pt>>pt_Ym_26","nvtxw2018");
+  t26->Draw("Ym_eta>>eta_Ym_26","nvtxw2018");
+  t26->Draw("Ye_mass>>Ye_26","nvtxw2018");
+  t26->Draw("Ye_pt>>pt_Ye_26","nvtxw2018");
+  t26->Draw("Ye_eta>>eta_Ye_26","nvtxw2018");
   t26->Draw("n_vtx>>nvtx_26_w","nvtxw2018");
   t26->Draw("n_vtx>>nvtx_26");
 
   
-  tSPS->Draw("TQ_mass>>mass_SPS");
-  tSPS->Draw("TQ_mass_tilde>>tmass_SPS");
-  tSPS->Draw("TQ_pt>>pt_SPS");
-  tSPS->Draw("TQ_eta>>eta_SPS");
-  tSPS->Draw("Ym_mass>>Ym_SPS");
-  tSPS->Draw("Ym_pt>>pt_Ym_SPS");
-  tSPS->Draw("Ym_eta>>eta_Ym_SPS");
-  tSPS->Draw("Ye_mass>>Ye_SPS");
-  tSPS->Draw("Ye_pt>>pt_Ye_SPS");
-  tSPS->Draw("Ye_eta>>eta_Ye_SPS");
+  tSPS->Draw("TQ_mass>>mass_SPS","nvtxw2018");
+  tSPS->Draw("TQ_mass_tilde>>tmass_SPS","nvtxw2018");
+  tSPS->Draw("TQ_pt>>pt_SPS","nvtxw2018");
+  tSPS->Draw("TQ_eta>>eta_SPS","nvtxw2018");
+  tSPS->Draw("Ym_mass>>Ym_SPS","nvtxw2018");
+  tSPS->Draw("Ym_pt>>pt_Ym_SPS","nvtxw2018");
+  tSPS->Draw("Ym_eta>>eta_Ym_SPS","nvtxw2018");
+  tSPS->Draw("Ye_mass>>Ye_SPS","nvtxw2018");
+  tSPS->Draw("Ye_pt>>pt_Ye_SPS","nvtxw2018");
+  tSPS->Draw("Ye_eta>>eta_Ye_SPS","nvtxw2018");
   tSPS->Draw("n_vtx>>nvtx_SPS_w","nvtxw2018");
   tSPS->Draw("n_vtx>>nvtx_SPS");
 
 
-  tDPS->Draw("TQ_mass>>mass_DPS");
-  tDPS->Draw("TQ_mass_tilde>>tmass_DPS");
-  tDPS->Draw("TQ_pt>>pt_DPS");
-  tDPS->Draw("TQ_eta>>eta_DPS");
-  tDPS->Draw("Ym_mass>>Ym_DPS");
-  tDPS->Draw("Ym_pt>>pt_Ym_DPS");
-  tDPS->Draw("Ym_eta>>eta_Ym_DPS");
-  tDPS->Draw("Ye_mass>>Ye_DPS");
-  tDPS->Draw("Ye_pt>>pt_Ye_DPS");
-  tDPS->Draw("Ye_eta>>eta_Ye_DPS");
+  tDPS->Draw("TQ_mass>>mass_DPS","nvtxw2018");
+  tDPS->Draw("TQ_mass_tilde>>tmass_DPS","nvtxw2018");
+  tDPS->Draw("TQ_pt>>pt_DPS","nvtxw2018");
+  tDPS->Draw("TQ_eta>>eta_DPS","nvtxw2018");
+  tDPS->Draw("Ym_mass>>Ym_DPS","nvtxw2018");
+  tDPS->Draw("Ym_pt>>pt_Ym_DPS","nvtxw2018");
+  tDPS->Draw("Ym_eta>>eta_Ym_DPS","nvtxw2018");
+  tDPS->Draw("Ye_mass>>Ye_DPS","nvtxw2018");
+  tDPS->Draw("Ye_pt>>pt_Ye_DPS","nvtxw2018");
+  tDPS->Draw("Ye_eta>>eta_Ye_DPS","nvtxw2018");
   tDPS->Draw("n_vtx>>nvtx_DPS");
   tDPS->Draw("n_vtx>>nvtx_DPS_w","nvtxw2018");
 

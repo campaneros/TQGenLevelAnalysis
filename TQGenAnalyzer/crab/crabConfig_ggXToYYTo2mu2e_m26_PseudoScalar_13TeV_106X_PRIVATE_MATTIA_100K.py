@@ -30,7 +30,7 @@ config.Data.splitting      = 'FileBased'
 #config.Site.whitelist     = ['T1_US_FNAL']
 
 ## Output Data ##
-config.Data.outputPrimaryDataset = 'ggXToYYTo2mu2e_m26_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_100K_wTrigger'
+config.Data.outputPrimaryDataset = 'ggXToYYTo2mu2e_m26_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_100K_woTrigger'
 config.Data.publication   = False
 config.Site.storageSite   = 'T2_CH_CERN'
 config.Data.outLFNDirBase = '/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/'

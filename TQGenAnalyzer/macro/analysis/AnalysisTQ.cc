@@ -363,14 +363,14 @@ void AnalysisTQ::Loop(std::string mass,int tot,int trigger)
    h_counter->SetBinContent(2,trigger);
    for(int i=0;i<14;i++) h_counter->SetBinContent(i+3, counter[i]);
    for(int i=0;i<14;i++) {
-     double eff= (float)counter[i]/counter[0];
+     double eff= (float)counter[i]/tot;
      eff_counter->SetBinContent(i+3, eff);
-     eff_counter->SetBinError(i+3, sqrt((eff*(1-eff))/counter[0]));
+     eff_counter->SetBinError(i+3, sqrt((eff*(1-eff))/tot));
    }
    eff_counter->SetBinContent(1, 1);
    eff_counter->SetBinError(1, 0);
-   eff_counter->SetBinContent(2, (int)trigger/tot);
-   eff_counter->SetBinError(1, sqrt(((int)trigger/tot*(1-(int)trigger/tot))/tot));
+   eff_counter->SetBinContent(2, (float)trigger/tot);
+   eff_counter->SetBinError(1, sqrt(((float)trigger/tot*(1-(float)trigger/tot))/tot));
    
    for(int i=0;i<14;i++) {
      double eff;
@@ -385,8 +385,8 @@ void AnalysisTQ::Loop(std::string mass,int tot,int trigger)
    
    effrel_counter->SetBinContent(1, 1);
    effrel_counter->SetBinError(1, 0);
-   effrel_counter->SetBinContent(2, (int)trigger/tot);
-   effrel_counter->SetBinError(1, sqrt(((int)trigger/tot*(1-(int)trigger/tot))/tot));
+   effrel_counter->SetBinContent(2, (float)trigger/tot);
+   effrel_counter->SetBinError(1, sqrt(((float)trigger/tot*(1-(int)trigger/tot))/tot));
    
 
    h_counter->GetXaxis()->SetBinLabel(1 ," Total");

@@ -40,7 +40,7 @@ public :
    Float_t         puw_2016;
    Float_t         puw_2017;
    Float_t         puw_2018;
-   Float_t         nvtxw_2018;
+   //   Float_t         nvtxw_2018;
    Float_t         puw_ALL;
    Int_t           HLT_Dimuon13_Upsilon_v_2016;
    Int_t           HLT_Dimuon8_Upsilon_Barrel_v_2016;
@@ -146,7 +146,7 @@ public :
    TBranch        *b_puw_2016;   //!
    TBranch        *b_puw_2017;   //!
    TBranch        *b_puw_2018;   //!
-   TBranch        *b_nvtxw_2018;   //!
+   //   TBranch        *b_nvtxw_2018;   //!
    TBranch        *b_puw_ALL;   //!
    TBranch        *b_HLT_Dimuon13_Upsilon_v_2016;   //!
    TBranch        *b_HLT_Dimuon8_Upsilon_Barrel_v_2016;   //!
@@ -398,7 +398,7 @@ void AnalysisTQ::Init(TTree *tree)
    fChain->SetBranchAddress("puw_2016", &puw_2016, &b_puw_2016);
    fChain->SetBranchAddress("puw_2017", &puw_2017, &b_puw_2017);
    fChain->SetBranchAddress("puw_2018", &puw_2018, &b_puw_2018);
-   fChain->SetBranchAddress("nvtxw_2018", &nvtxw_2018, &b_nvtxw_2018);
+   //   fChain->SetBranchAddress("nvtxw_2018", &nvtxw_2018, &b_nvtxw_2018);
    fChain->SetBranchAddress("puw_ALL", &puw_ALL, &b_puw_ALL);
    fChain->SetBranchAddress("HLT_Dimuon13_Upsilon_v_2016", &HLT_Dimuon13_Upsilon_v_2016, &b_HLT_Dimuon13_Upsilon_v_2016);
    fChain->SetBranchAddress("HLT_Dimuon8_Upsilon_Barrel_v_2016", &HLT_Dimuon8_Upsilon_Barrel_v_2016, &b_HLT_Dimuon8_Upsilon_Barrel_v_2016);

@@ -56,6 +56,10 @@ int runTQ(std::string mass, std::string region){
     t.Add("/eos/cms/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/ntuple_ggXToYYTo2mu2e_m18_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_1M_wTrigger.root");
     TFile* f = new TFile("/eos/cms/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/ntuple_ggXToYYTo2mu2e_m18_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_1M_wTrigger.root");
     h_counter=(TH1F*)f->Get("GenAnalysis/h_counter");
+  }else if(mass=="20wTrigger"){
+    t.Add("/eos/cms/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/ntuple_ggXToYYTo2mu2e_m20_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_1M_wTrigger.root");
+    TFile* f = new TFile("/eos/cms/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/ntuple_ggXToYYTo2mu2e_m20_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_1M_wTrigger.root");
+    h_counter=(TH1F*)f->Get("GenAnalysis/h_counter");
   }else if(mass=="22"){
     t.Add("/eos/cms/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/ntuple_ggXToYYTo2mu2e_m22_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_100K.root");
     TFile* f = new TFile("/eos/cms/store/group/phys_egamma/soffi/ggXToYYTo2mu2e/ntuple_ggXToYYTo2mu2e_m22_PseudoScalar_13TeV_106X_PRIVATE_MATTIA_100K.root");
@@ -106,6 +110,11 @@ int runTQ(std::string mass, std::string region){
     TFile* f = new TFile("/eos/cms/store/group/phys_egamma/soffi/TQ-DATA/ntuple_MuOnia_Run2018C-UL2018_MiniAODv2-v1_WithTrigMatch.root");
     h_counter=(TH1F*)f->Get("GenAnalysis/h_counter");
   }
+  if(mass=="Run2018ABCD_trigger"){
+    t.Add("/eos/cms/store/group/phys_egamma/soffi/TQ-DATA/ntuple_MuOnia_Run2018ABCD-UL2018_MiniAODv2-v1_WithTrigMatch.root");
+    TFile* f = new TFile("/eos/cms/store/group/phys_egamma/soffi/TQ-DATA/ntuple_MuOnia_Run2018ABCD-UL2018_MiniAODv2-v1_WithTrigMatch.root");
+    h_counter=(TH1F*)f->Get("GenAnalysis/h_counter");
+  }
 
 
 
@@ -129,12 +138,12 @@ int runTQ(std::string mass, std::string region){
 
 void runTQAll(){
 
-  runTQ("5", "TQ");
-  runTQ("7", "TQ");
-  runTQ("9", "TQ");
-  runTQ("14", "TQ");
-  runTQ("18", "TQ");
-  runTQ("22", "TQ");
-  runTQ("26", "TQ");
-
+  //  runTQ("5", "TQ");
+  //runTQ("7", "TQ");
+  //runTQ("9", "TQ");
+  //runTQ("14", "TQ");
+  runTQ("18wTrigger", "TQ");
+  runTQ("20wTrigger", "TQ");
+  runTQ("26wTrigger", "TQ");
+  //  runTQ("Run2018ABCD_trigger", "TQ");
 }

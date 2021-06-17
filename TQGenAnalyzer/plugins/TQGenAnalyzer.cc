@@ -2220,7 +2220,7 @@ private:
        h_counter->Fill(1);
      
        bool triggerOK=0;
-       //       if(sampleID <=0)triggerOK=1;
+       
        
        if(year==2016){
 	 triggerOK = HLT_Dimuon13_Upsilon_v_2016||HLT_Dimuon8_Upsilon_Barrel_v_2016 ;
@@ -2233,6 +2233,7 @@ private:
 
 
        //perform trigger studies: need prescaled trigger fired
+       //       if(sampleID <=0)triggerOK=1;
        //       triggerOK=HLT_Dimuon0_prescaled_2018;    
        
        if(triggerOK)h_counter->Fill(3);
