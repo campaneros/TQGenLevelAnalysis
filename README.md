@@ -1,9 +1,9 @@
 # TQGenLevelAnalysis
 
-#setup release (11_3_X or 10_6_X to have lowPtElectrons there)
+#instruction for 10_2_5
 
-scram project -n CMSSW-106X-GenAnalysis CMSSW CMSSW_10_6_2
-cd CMSSW-106X-GenAnalysis/src
+scram project -n CMSSW-102X-GenAnalysis CMSSW CMSSW_10_2_15
+cd CMSSW-102X-GenAnalysis/src
 cmsenv
 
 
@@ -17,35 +17,28 @@ git clone --single-branch --branch from-CMSSW_10_2_15_2020Sept15 https://github.
 
 
 #clone github repo (better first to fork in your own github and then clone yours)
-
 git clone https://github.com/lsoffi/TQGenLevelAnalysis.git
 
 
 
 
 #compile
-
 cd TQGenLevelAnalysis/TQGenAnalyzer/
-
 scram b
 
 
 #run in local
-
 cmsRun python/ConfFile_cfg.py
 
 
 
+#TO DO: port this to 10_6_2
 
 
 
 
 
 
-#integration of lowptelectrons:
-
-- example of relval w/ needed collections:https://cmsweb.cern.ch/das/request?instance=prod/global&input=file+dataset%3D%2FRelValZEE_13%2FCMSSW_10_6_20-PU_106X_mc2017_realistic_v9_miniv2-v1%2FMINIAODSIM
-- file copied here: /afs/cern.ch/user/m/mcampana/public/B7CAA14B-69E0-6540-8719-0236FB37D7C9.root
 
 
 
@@ -56,6 +49,8 @@ cmsRun python/ConfFile_cfg.py
 
 
 #usefule links:
+- example of relval w/ needed collections:https://cmsweb.cern.ch/das/request?instance=prod/global&input=file+dataset%3D%2FRelValZEE_13%2FCMSSW_10_6_20-PU_106X_mc2017_realistic_v9_miniv2-v1%2FMINIAODSIM
+- file copied here: /afs/cern.ch/user/m/mcampana/public/B7CAA14B-69E0-6540-8719-0236FB37D7C9.root
 
 https://github.com/cms-sw/cmssw/blob/CMSSW_7_4_X/PhysicsTools/PatAlgos/python/slimming/prunedGenParticles_cfi.py
 
